@@ -9,6 +9,7 @@ use App\Models\CompetitionParticipant;
 use App\Models\CompetitionStage;
 use App\Models\MatchConnection;
 use App\Models\MatchParticipant;
+use Illuminate\Database\Eloquent\Collection;
 use InvalidArgumentException;
 
 /**
@@ -108,6 +109,8 @@ class Generator implements FormatGenerator
 
                     if ($p1 !== null && $p2 === null) {
                         $this->applyBye($match, $p1);
+                    } elseif ($p2 !== null && $p1 === null) {
+                        $this->applyBye($match, $p2);
                     }
                 }
             }
@@ -208,8 +211,8 @@ class Generator implements FormatGenerator
      */
     protected function wireLosersDropdowns(array $wbMatches, array $lbMatches, int $wbRounds): void
     {
-        for ($wbRound = 1; $wbRound <= $wbRounds - 1; $wbRound++) {
-            $lbTargetRound = ($wbRound - 1) * 2 + 1;
+        for ($wbRound = 1; $wbRound <= $wbRounds; $wbRound++) {
+            $lbTargetRound = $wbRound === 1 ? 1 : 2 * ($wbRound - 1);
 
             if (! isset($lbMatches[$lbTargetRound])) {
                 continue;
@@ -394,11 +397,11 @@ class Generator implements FormatGenerator
     }
 
     /**
-     * @param  \Illuminate\Database\Eloquent\Collection<int, CompetitionParticipant>  $participants
+     * @param  Collection<int, CompetitionParticipant>  $participants
      * @return array<int, CompetitionParticipant|null>
      */
     protected function seedParticipants(
-        \Illuminate\Database\Eloquent\Collection $participants,
+        Collection $participants,
         int $bracketSize,
     ): array {
         $positions = $this->generateSeedOrder($bracketSize);

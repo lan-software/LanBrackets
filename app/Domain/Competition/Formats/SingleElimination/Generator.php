@@ -9,6 +9,7 @@ use App\Models\CompetitionParticipant;
 use App\Models\CompetitionStage;
 use App\Models\MatchConnection;
 use App\Models\MatchParticipant;
+use Illuminate\Database\Eloquent\Collection;
 use InvalidArgumentException;
 
 class Generator implements FormatGenerator
@@ -84,6 +85,8 @@ class Generator implements FormatGenerator
                     // BYE: auto-advance when only one participant in a match
                     if ($p1 !== null && $p2 === null) {
                         $this->applyBye($match, $p1);
+                    } elseif ($p2 !== null && $p1 === null) {
+                        $this->applyBye($match, $p2);
                     }
                 }
             }
@@ -125,11 +128,11 @@ class Generator implements FormatGenerator
      * Classic bracket seeding: 1v(N), 2v(N-1), etc., reordered so that
      * top seeds are distributed evenly across the bracket halves.
      *
-     * @param  \Illuminate\Database\Eloquent\Collection<int, CompetitionParticipant>  $participants
+     * @param  Collection<int, CompetitionParticipant>  $participants
      * @return array<int, CompetitionParticipant|null>
      */
     protected function seedParticipants(
-        \Illuminate\Database\Eloquent\Collection $participants,
+        Collection $participants,
         int $bracketSize,
     ): array {
         $positions = $this->generateSeedOrder($bracketSize);
