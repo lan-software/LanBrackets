@@ -3,7 +3,7 @@
 use App\Domain\Competition\Formats\DoubleElimination\Generator;
 use App\Domain\Competition\Formats\DoubleElimination\Resolver;
 use App\Domain\Competition\Formats\DoubleElimination\Ruleset;
-use App\Enums\MatchResult;
+use App\Domain\Competition\Services\FormatRegistry;
 use App\Enums\MatchStatus;
 use App\Enums\StageType;
 use App\Models\Competition;
@@ -312,6 +312,7 @@ it('provides double elimination default settings', function () {
     expect($ruleset->defaults())->toBe([
         'best_of' => 1,
         'grand_final_reset' => false,
+        'third_place_match' => false,
     ]);
 });
 
@@ -326,7 +327,7 @@ it('validates double elimination settings', function () {
 // ─── FormatRegistry Integration ───
 
 it('resolves double elimination via format registry', function () {
-    $registry = new \App\Domain\Competition\Services\FormatRegistry;
+    $registry = new FormatRegistry;
 
     expect($registry->hasFormat(StageType::DoubleElimination))->toBeTrue()
         ->and($registry->generator(StageType::DoubleElimination))->toBeInstanceOf(Generator::class)
@@ -335,7 +336,136 @@ it('resolves double elimination via format registry', function () {
 });
 
 it('still reports unimplemented formats correctly', function () {
-    $registry = new \App\Domain\Competition\Services\FormatRegistry;
+    $registry = new FormatRegistry;
 
     expect($registry->hasFormat(StageType::Swiss))->toBeFalse();
+});
+
+// ─── Third Place Match Tests ───
+
+function createDEStageWithThirdPlace(int $count): CompetitionStage
+{
+    $competition = Competition::factory()->tournament()->create();
+
+    $stage = CompetitionStage::factory()->create([
+        'competition_id' => $competition->id,
+        'stage_type' => StageType::DoubleElimination,
+        'order' => 1,
+        'settings' => ['third_place_match' => true],
+    ]);
+
+    for ($i = 1; $i <= $count; $i++) {
+        CompetitionParticipant::factory()->forTeam(Team::factory()->create())->create([
+            'competition_id' => $competition->id,
+            'seed' => $i,
+        ]);
+    }
+
+    return $stage;
+}
+
+it('generates a 3rd place match for DE 4 participants when enabled', function () {
+    $stage = createDEStageWithThirdPlace(4);
+
+    (new Generator)->generate($stage);
+
+    $matches = CompetitionMatch::where('competition_stage_id', $stage->id)->get();
+
+    // WB=3, LB=2, GF=1, 3rd Place=1 = 7 total
+    expect($matches)->toHaveCount(7);
+
+    $thirdPlaceMatch = $matches->first(fn ($m) => ($m->settings['bracket_side'] ?? '') === 'third_place');
+    expect($thirdPlaceMatch)->not->toBeNull()
+        ->and($thirdPlaceMatch->round_number)->toBe(201);
+
+    // Should have loser connections from LB Final and penultimate LB round
+    $incoming = MatchConnection::where('target_match_id', $thirdPlaceMatch->id)->get();
+    expect($incoming)->toHaveCount(2)
+        ->and($incoming->pluck('source_outcome')->unique()->toArray())->toBe(['loser'])
+        ->and($incoming->pluck('target_slot')->sort()->values()->toArray())->toBe([1, 2]);
+});
+
+it('does not generate a DE 3rd place match when setting is disabled', function () {
+    $stage = createDEStageWithParticipants(4);
+
+    (new Generator)->generate($stage);
+
+    $matches = CompetitionMatch::where('competition_stage_id', $stage->id)->get();
+
+    expect($matches)->toHaveCount(6);
+
+    $thirdPlaceMatch = $matches->first(fn ($m) => ($m->settings['bracket_side'] ?? '') === 'third_place');
+    expect($thirdPlaceMatch)->toBeNull();
+});
+
+it('plays through a full 4-team DE tournament with 3rd place match', function () {
+    $stage = createDEStageWithThirdPlace(4);
+
+    (new Generator)->generate($stage);
+
+    // ── WB Round 1 ──
+    $wbR1M1 = freshMatch(
+        CompetitionMatch::where('competition_stage_id', $stage->id)
+            ->where('round_number', 1)->where('sequence', 1)->first()->id
+    );
+    resolveMatch($wbR1M1, 3, 1);
+
+    $wbR1M2 = freshMatch(
+        CompetitionMatch::where('competition_stage_id', $stage->id)
+            ->where('round_number', 1)->where('sequence', 2)->first()->id
+    );
+    resolveMatch($wbR1M2, 0, 3);
+
+    // ── WB Final (Round 2) ──
+    $wbFinal = freshMatch(
+        CompetitionMatch::where('competition_stage_id', $stage->id)
+            ->where('round_number', 2)->where('sequence', 1)->first()->id
+    );
+    expect($wbFinal->matchParticipants)->toHaveCount(2);
+    resolveMatch($wbFinal, 3, 2);
+
+    // ── LB Round 1 (101) ──
+    $lbR1 = freshMatch(
+        CompetitionMatch::where('competition_stage_id', $stage->id)
+            ->where('round_number', 101)->where('sequence', 1)->first()->id
+    );
+    expect($lbR1->matchParticipants)->toHaveCount(2);
+    resolveMatch($lbR1, 3, 0);
+
+    // ── LB Final (102) ──
+    $lbFinal = freshMatch(
+        CompetitionMatch::where('competition_stage_id', $stage->id)
+            ->where('round_number', 102)->where('sequence', 1)->first()->id
+    );
+    expect($lbFinal->matchParticipants)->toHaveCount(2);
+    resolveMatch($lbFinal, 3, 2);
+
+    // ── Grand Final (200) ──
+    $gf = freshMatch(
+        CompetitionMatch::where('competition_stage_id', $stage->id)
+            ->where('round_number', 200)->where('sequence', 1)->first()->id
+    );
+    expect($gf->matchParticipants)->toHaveCount(2);
+    resolveMatch($gf, 3, 1);
+
+    $gf->refresh();
+    expect($gf->status)->toBe(MatchStatus::Finished);
+
+    // ── 3rd Place Match (201) ──
+    $tp = freshMatch(
+        CompetitionMatch::where('competition_stage_id', $stage->id)
+            ->where('round_number', 201)->where('sequence', 1)->first()->id
+    );
+    expect($tp->matchParticipants)->toHaveCount(2);
+    resolveMatch($tp, 2, 1);
+
+    $tp->refresh();
+    expect($tp->status)->toBe(MatchStatus::Finished)
+        ->and($tp->winner_participant_id)->not->toBeNull();
+
+    // All 7 matches should be finished
+    $allFinished = CompetitionMatch::where('competition_stage_id', $stage->id)
+        ->where('status', MatchStatus::Finished)
+        ->count();
+    expect($allFinished)->toBe(7);
 });

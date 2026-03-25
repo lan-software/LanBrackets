@@ -119,6 +119,47 @@ class Generator implements FormatGenerator
 
             $previousRoundMatches = $currentRoundMatches;
         }
+
+        if ($stage->settings['third_place_match'] ?? false) {
+            $this->generateThirdPlaceMatch($stage, $totalRounds);
+        }
+    }
+
+    /**
+     * Generate a 3rd place match between the two semifinal losers.
+     */
+    protected function generateThirdPlaceMatch(CompetitionStage $stage, int $totalRounds): void
+    {
+        if ($totalRounds < 2) {
+            return;
+        }
+
+        $semiFinals = CompetitionMatch::where('competition_stage_id', $stage->id)
+            ->where('round_number', $totalRounds - 1)
+            ->orderBy('sequence')
+            ->get();
+
+        if ($semiFinals->count() !== 2) {
+            return;
+        }
+
+        $thirdPlaceMatch = CompetitionMatch::create([
+            'competition_id' => $stage->competition_id,
+            'competition_stage_id' => $stage->id,
+            'round_number' => $totalRounds,
+            'sequence' => 2,
+            'status' => MatchStatus::Pending,
+            'settings' => ['third_place' => true],
+        ]);
+
+        foreach ($semiFinals->values() as $i => $semi) {
+            MatchConnection::create([
+                'source_match_id' => $semi->id,
+                'source_outcome' => 'loser',
+                'target_match_id' => $thirdPlaceMatch->id,
+                'target_slot' => $i + 1,
+            ]);
+        }
     }
 
     /**

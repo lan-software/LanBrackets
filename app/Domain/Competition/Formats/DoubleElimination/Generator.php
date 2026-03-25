@@ -52,6 +52,11 @@ class Generator implements FormatGenerator
 
         // ── Grand Final ──
         $this->generateGrandFinal($stage, $wbMatches, $lbMatches, $wbRounds);
+
+        // ── Third Place Match ──
+        if ($stage->settings['third_place_match'] ?? false) {
+            $this->generateThirdPlaceMatch($stage, $lbMatches, $wbRounds);
+        }
     }
 
     /**
@@ -368,6 +373,54 @@ class Generator implements FormatGenerator
                 'target_slot' => 2,
             ]);
         }
+    }
+
+    /**
+     * Generate a 3rd place match between the LB Final loser and the
+     * penultimate LB round loser (determines 3rd vs 4th place).
+     *
+     * @param  array<int, array<int, CompetitionMatch>>  $lbMatches
+     */
+    protected function generateThirdPlaceMatch(
+        CompetitionStage $stage,
+        array $lbMatches,
+        int $wbRounds,
+    ): void {
+        $lbTotalRounds = ($wbRounds - 1) * 2;
+
+        if ($lbTotalRounds < 2) {
+            return;
+        }
+
+        $lbFinal = $lbMatches[$lbTotalRounds][1] ?? null;
+        $lbPenultimate = $lbMatches[$lbTotalRounds - 1][1] ?? null;
+
+        if ($lbFinal === null || $lbPenultimate === null) {
+            return;
+        }
+
+        $thirdPlaceMatch = CompetitionMatch::create([
+            'competition_id' => $stage->competition_id,
+            'competition_stage_id' => $stage->id,
+            'round_number' => 201,
+            'sequence' => 1,
+            'status' => MatchStatus::Pending,
+            'settings' => ['bracket_side' => 'third_place'],
+        ]);
+
+        MatchConnection::create([
+            'source_match_id' => $lbFinal->id,
+            'source_outcome' => 'loser',
+            'target_match_id' => $thirdPlaceMatch->id,
+            'target_slot' => 1,
+        ]);
+
+        MatchConnection::create([
+            'source_match_id' => $lbPenultimate->id,
+            'source_outcome' => 'loser',
+            'target_match_id' => $thirdPlaceMatch->id,
+            'target_slot' => 2,
+        ]);
     }
 
     /**

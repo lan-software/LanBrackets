@@ -35,7 +35,7 @@ class CreateParticipant extends Command
         try {
             $participant = $action->execute($type, $name, $options);
 
-            $this->info(ucfirst($type) . " created: {$participant->name} (ID: {$participant->id})");
+            $this->info(ucfirst($type)." created: {$participant->name} (ID: {$participant->id})");
 
             return self::SUCCESS;
         } catch (\InvalidArgumentException $e) {

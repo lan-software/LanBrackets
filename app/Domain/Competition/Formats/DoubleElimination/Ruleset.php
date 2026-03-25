@@ -15,6 +15,7 @@ class Ruleset implements FormatRuleset
         return [
             'best_of' => 1,
             'grand_final_reset' => false, // TODO: Implement bracket reset logic
+            'third_place_match' => false,
         ];
     }
 
@@ -36,6 +37,10 @@ class Ruleset implements FormatRuleset
 
         if (isset($settings['grand_final_reset']) && ! is_bool($settings['grand_final_reset'])) {
             $errors['grand_final_reset'] = 'grand_final_reset must be a boolean.';
+        }
+
+        if (isset($settings['third_place_match']) && ! is_bool($settings['third_place_match'])) {
+            $errors['third_place_match'] = 'third_place_match must be a boolean.';
         }
 
         return $errors;

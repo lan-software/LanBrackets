@@ -77,10 +77,18 @@ class ShowTournamentTree extends Command
 
     protected function renderSingleElimination($matches): void
     {
-        $rounds = $matches->groupBy('round_number')->sortKeys();
+        $thirdPlace = $matches->filter(fn ($m) => $m->settings['third_place'] ?? false);
+        $regular = $matches->reject(fn ($m) => $m->settings['third_place'] ?? false);
+        $rounds = $regular->groupBy('round_number')->sortKeys();
 
         foreach ($rounds as $roundNum => $roundMatches) {
             $this->renderRound("Round {$roundNum}", $roundMatches);
+        }
+
+        if ($thirdPlace->isNotEmpty()) {
+            $this->newLine();
+            $this->info('  ╔══ 3RD PLACE MATCH ══╗');
+            $this->renderRound('3rd Place', $thirdPlace);
         }
     }
 
@@ -89,6 +97,7 @@ class ShowTournamentTree extends Command
         $wb = $matches->filter(fn ($m) => ($m->settings['bracket_side'] ?? '') === 'winners');
         $lb = $matches->filter(fn ($m) => ($m->settings['bracket_side'] ?? '') === 'losers');
         $gf = $matches->filter(fn ($m) => ($m->settings['bracket_side'] ?? '') === 'grand_final');
+        $tp = $matches->filter(fn ($m) => ($m->settings['bracket_side'] ?? '') === 'third_place');
 
         if ($wb->isNotEmpty()) {
             $this->info('  ╔══ WINNERS BRACKET ══╗');
@@ -112,6 +121,12 @@ class ShowTournamentTree extends Command
             $this->newLine();
             $this->info('  ╔══ GRAND FINAL ══╗');
             $this->renderRound('Grand Final', $gf);
+        }
+
+        if ($tp->isNotEmpty()) {
+            $this->newLine();
+            $this->info('  ╔══ 3RD PLACE MATCH ══╗');
+            $this->renderRound('3rd Place', $tp);
         }
     }
 

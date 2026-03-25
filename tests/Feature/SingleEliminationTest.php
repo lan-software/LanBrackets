@@ -3,6 +3,7 @@
 use App\Domain\Competition\Formats\SingleElimination\Generator;
 use App\Domain\Competition\Formats\SingleElimination\Resolver;
 use App\Domain\Competition\Formats\SingleElimination\Ruleset;
+use App\Domain\Competition\Services\FormatRegistry;
 use App\Enums\MatchResult;
 use App\Enums\MatchStatus;
 use App\Enums\StageType;
@@ -11,7 +12,6 @@ use App\Models\CompetitionMatch;
 use App\Models\CompetitionParticipant;
 use App\Models\CompetitionStage;
 use App\Models\MatchConnection;
-use App\Models\MatchParticipant;
 use App\Models\Team;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -326,10 +326,175 @@ it('applies defaults to a stage', function () {
 // ─── FormatRegistry Integration ───
 
 it('resolves single elimination via format registry', function () {
-    $registry = new \App\Domain\Competition\Services\FormatRegistry;
+    $registry = new FormatRegistry;
 
     expect($registry->hasFormat(StageType::SingleElimination))->toBeTrue()
         ->and($registry->generator(StageType::SingleElimination))->toBeInstanceOf(Generator::class)
         ->and($registry->resolver(StageType::SingleElimination))->toBeInstanceOf(Resolver::class)
         ->and($registry->ruleset(StageType::SingleElimination))->toBeInstanceOf(Ruleset::class);
+});
+
+// ─── Third Place Match Tests ───
+
+function createStageWithThirdPlace(int $count): CompetitionStage
+{
+    $competition = Competition::factory()->tournament()->create();
+
+    $stage = CompetitionStage::factory()->singleElimination()->create([
+        'competition_id' => $competition->id,
+        'order' => 1,
+        'settings' => ['third_place_match' => true],
+    ]);
+
+    for ($i = 1; $i <= $count; $i++) {
+        CompetitionParticipant::factory()->forTeam(Team::factory()->create())->create([
+            'competition_id' => $competition->id,
+            'seed' => $i,
+        ]);
+    }
+
+    return $stage;
+}
+
+it('generates a 3rd place match for 4 participants when enabled', function () {
+    $stage = createStageWithThirdPlace(4);
+
+    (new Generator)->generate($stage);
+
+    $matches = CompetitionMatch::where('competition_stage_id', $stage->id)->get();
+
+    // 4p → 2 + 1 regular + 1 third place = 4 matches
+    expect($matches)->toHaveCount(4);
+
+    $thirdPlaceMatch = $matches->first(fn ($m) => $m->settings['third_place'] ?? false);
+    expect($thirdPlaceMatch)->not->toBeNull()
+        ->and($thirdPlaceMatch->round_number)->toBe(2)
+        ->and($thirdPlaceMatch->sequence)->toBe(2);
+
+    // Should have loser connections from both semifinal matches
+    $incoming = MatchConnection::where('target_match_id', $thirdPlaceMatch->id)->get();
+    expect($incoming)->toHaveCount(2)
+        ->and($incoming->pluck('source_outcome')->unique()->toArray())->toBe(['loser'])
+        ->and($incoming->pluck('target_slot')->sort()->values()->toArray())->toBe([1, 2]);
+});
+
+it('does not generate a 3rd place match when setting is disabled', function () {
+    $stage = createStageWithParticipants(4);
+
+    (new Generator)->generate($stage);
+
+    $matches = CompetitionMatch::where('competition_stage_id', $stage->id)->get();
+
+    expect($matches)->toHaveCount(3);
+
+    $thirdPlaceMatch = $matches->first(fn ($m) => $m->settings['third_place'] ?? false);
+    expect($thirdPlaceMatch)->toBeNull();
+});
+
+it('does not generate a 3rd place match for 2 participants', function () {
+    $competition = Competition::factory()->tournament()->create();
+
+    $stage = CompetitionStage::factory()->singleElimination()->create([
+        'competition_id' => $competition->id,
+        'order' => 1,
+        'settings' => ['third_place_match' => true],
+    ]);
+
+    for ($i = 1; $i <= 2; $i++) {
+        CompetitionParticipant::factory()->forTeam(Team::factory()->create())->create([
+            'competition_id' => $competition->id,
+            'seed' => $i,
+        ]);
+    }
+
+    (new Generator)->generate($stage);
+
+    $matches = CompetitionMatch::where('competition_stage_id', $stage->id)->get();
+
+    // Only 1 match (the final), no 3rd place — only 1 round
+    expect($matches)->toHaveCount(1);
+
+    $thirdPlaceMatch = $matches->first(fn ($m) => $m->settings['third_place'] ?? false);
+    expect($thirdPlaceMatch)->toBeNull();
+});
+
+it('routes semifinal losers to 3rd place match', function () {
+    $stage = createStageWithThirdPlace(4);
+
+    (new Generator)->generate($stage);
+
+    // Play both semifinals
+    $r1m1 = CompetitionMatch::where('competition_stage_id', $stage->id)
+        ->where('round_number', 1)->where('sequence', 1)->first();
+    $r1m1->matchParticipants->firstWhere('slot', 1)->update(['score' => 3]);
+    $r1m1->matchParticipants->firstWhere('slot', 2)->update(['score' => 0]);
+    (new Resolver)->resolve($r1m1);
+
+    $r1m2 = CompetitionMatch::where('competition_stage_id', $stage->id)
+        ->where('round_number', 1)->where('sequence', 2)->first();
+    $r1m2->matchParticipants->firstWhere('slot', 1)->update(['score' => 1]);
+    $r1m2->matchParticipants->firstWhere('slot', 2)->update(['score' => 2]);
+    (new Resolver)->resolve($r1m2);
+
+    // 3rd place match should now have 2 participants (the losers)
+    $thirdPlaceMatch = CompetitionMatch::where('competition_stage_id', $stage->id)
+        ->where('settings->third_place', true)
+        ->first();
+
+    expect($thirdPlaceMatch->matchParticipants)->toHaveCount(2);
+
+    // The losers from the semifinals should be in the 3rd place match
+    $loser1 = $r1m1->fresh()->loser_participant_id;
+    $loser2 = $r1m2->fresh()->loser_participant_id;
+    $tpParticipantIds = $thirdPlaceMatch->matchParticipants->pluck('competition_participant_id')->sort()->values()->toArray();
+
+    expect($tpParticipantIds)->toBe(collect([$loser1, $loser2])->sort()->values()->toArray());
+});
+
+it('plays through a full 4-team SE tournament with 3rd place match', function () {
+    $stage = createStageWithThirdPlace(4);
+
+    (new Generator)->generate($stage);
+
+    // Semifinal 1
+    $r1m1 = CompetitionMatch::where('competition_stage_id', $stage->id)
+        ->where('round_number', 1)->where('sequence', 1)->first();
+    $r1m1->matchParticipants->firstWhere('slot', 1)->update(['score' => 3]);
+    $r1m1->matchParticipants->firstWhere('slot', 2)->update(['score' => 0]);
+    (new Resolver)->resolve($r1m1);
+
+    // Semifinal 2
+    $r1m2 = CompetitionMatch::where('competition_stage_id', $stage->id)
+        ->where('round_number', 1)->where('sequence', 2)->first();
+    $r1m2->matchParticipants->firstWhere('slot', 1)->update(['score' => 1]);
+    $r1m2->matchParticipants->firstWhere('slot', 2)->update(['score' => 2]);
+    (new Resolver)->resolve($r1m2);
+
+    // Final
+    $final = CompetitionMatch::where('competition_stage_id', $stage->id)
+        ->where('round_number', 2)->where('sequence', 1)->first();
+    expect($final->matchParticipants)->toHaveCount(2);
+    $final->matchParticipants->firstWhere('slot', 1)->update(['score' => 3]);
+    $final->matchParticipants->firstWhere('slot', 2)->update(['score' => 2]);
+    (new Resolver)->resolve($final);
+
+    // 3rd Place Match
+    $thirdPlace = CompetitionMatch::where('competition_stage_id', $stage->id)
+        ->where('settings->third_place', true)
+        ->with('matchParticipants')
+        ->first();
+    expect($thirdPlace->matchParticipants)->toHaveCount(2);
+    $thirdPlace->matchParticipants->firstWhere('slot', 1)->update(['score' => 2]);
+    $thirdPlace->matchParticipants->firstWhere('slot', 2)->update(['score' => 1]);
+    (new Resolver)->resolve($thirdPlace);
+
+    $thirdPlace->refresh();
+    expect($thirdPlace->status)->toBe(MatchStatus::Finished)
+        ->and($thirdPlace->winner_participant_id)->not->toBeNull();
+
+    // All 4 matches should be finished
+    $allFinished = CompetitionMatch::where('competition_stage_id', $stage->id)
+        ->where('status', MatchStatus::Finished)
+        ->count();
+    expect($allFinished)->toBe(4);
 });

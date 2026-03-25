@@ -46,7 +46,7 @@ class Resolver implements FormatResolver
         if ($p1->score === $p2->score) {
             throw new InvalidArgumentException(
                 "Match [{$match->id}] cannot be resolved: scores are tied. "
-                . 'Single elimination does not allow draws.'
+                .'Single elimination does not allow draws.'
             );
         }
 
@@ -64,23 +64,27 @@ class Resolver implements FormatResolver
             'finished_at' => now(),
         ]);
 
-        $this->advanceWinner($match, $winner);
+        $this->advanceParticipant($match, $winner, 'winner');
+        $this->advanceParticipant($match, $loser, 'loser');
     }
 
     /**
-     * Place the match winner into the next match via MatchConnections.
+     * Place a participant into the next match(es) via MatchConnections.
      */
-    protected function advanceWinner(CompetitionMatch $match, MatchParticipant $winner): void
-    {
+    protected function advanceParticipant(
+        CompetitionMatch $match,
+        MatchParticipant $participant,
+        string $outcome,
+    ): void {
         $connections = MatchConnection::query()
             ->where('source_match_id', $match->id)
-            ->where('source_outcome', 'winner')
+            ->where('source_outcome', $outcome)
             ->get();
 
         foreach ($connections as $connection) {
             MatchParticipant::create([
                 'match_id' => $connection->target_match_id,
-                'competition_participant_id' => $winner->competition_participant_id,
+                'competition_participant_id' => $participant->competition_participant_id,
                 'slot' => $connection->target_slot,
             ]);
         }
