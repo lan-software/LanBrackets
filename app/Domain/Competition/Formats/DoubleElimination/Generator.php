@@ -51,7 +51,12 @@ class Generator implements FormatGenerator
         $lbMatches = $this->generateLosersBracket($stage, $wbMatches, $wbRounds);
 
         // ── Grand Final ──
-        $this->generateGrandFinal($stage, $wbMatches, $lbMatches, $wbRounds);
+        $grandFinal = $this->generateGrandFinal($stage, $wbMatches, $lbMatches, $wbRounds);
+
+        // ── Grand Final Reset ──
+        if ($stage->settings['grand_final_reset'] ?? false) {
+            $this->generateGrandFinalReset($stage, $grandFinal);
+        }
 
         // ── Third Place Match ──
         if ($stage->settings['third_place_match'] ?? false) {
@@ -341,7 +346,7 @@ class Generator implements FormatGenerator
         array $wbMatches,
         array $lbMatches,
         int $wbRounds,
-    ): void {
+    ): CompetitionMatch {
         $grandFinal = CompetitionMatch::create([
             'competition_id' => $stage->competition_id,
             'competition_stage_id' => $stage->id,
@@ -373,6 +378,46 @@ class Generator implements FormatGenerator
                 'target_slot' => 2,
             ]);
         }
+
+        return $grandFinal;
+    }
+
+    /**
+     * Generate a grand final reset match.
+     *
+     * If the LB champion beats the WB champion in the grand final, a second
+     * "reset" match is played because the WB champion has only lost once.
+     * The match is pre-created but may be cancelled by the resolver if the
+     * WB champion wins the original grand final.
+     */
+    protected function generateGrandFinalReset(
+        CompetitionStage $stage,
+        CompetitionMatch $grandFinal,
+    ): void {
+        $resetMatch = CompetitionMatch::create([
+            'competition_id' => $stage->competition_id,
+            'competition_stage_id' => $stage->id,
+            'round_number' => 202,
+            'sequence' => 1,
+            'status' => MatchStatus::Pending,
+            'settings' => ['bracket_side' => 'grand_final_reset'],
+        ]);
+
+        // GF winner → reset slot 1
+        MatchConnection::create([
+            'source_match_id' => $grandFinal->id,
+            'source_outcome' => 'winner',
+            'target_match_id' => $resetMatch->id,
+            'target_slot' => 1,
+        ]);
+
+        // GF loser → reset slot 2
+        MatchConnection::create([
+            'source_match_id' => $grandFinal->id,
+            'source_outcome' => 'loser',
+            'target_match_id' => $resetMatch->id,
+            'target_slot' => 2,
+        ]);
     }
 
     /**

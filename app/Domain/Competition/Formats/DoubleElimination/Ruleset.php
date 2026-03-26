@@ -14,7 +14,7 @@ class Ruleset implements FormatRuleset
     {
         return [
             'best_of' => 1,
-            'grand_final_reset' => false, // TODO: Implement bracket reset logic
+            'grand_final_reset' => false,
             'third_place_match' => false,
         ];
     }

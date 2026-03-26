@@ -17,6 +17,7 @@ class Resolver implements FormatResolver
      *
      * Advances the winner through 'winner' connections and the loser through
      * 'loser' connections (which drop into the losers bracket).
+     * Handles grand final reset logic when enabled.
      */
     public function resolve(CompetitionMatch $match): void
     {
@@ -63,8 +64,44 @@ class Resolver implements FormatResolver
             'finished_at' => now(),
         ]);
 
+        if ($this->isGrandFinalWithReset($match) && $winner->slot === 1) {
+            $this->cancelResetMatch($match);
+
+            return;
+        }
+
         $this->advanceParticipant($match, $winner, 'winner');
         $this->advanceParticipant($match, $loser, 'loser');
+    }
+
+    /**
+     * Check if this match is the grand final and the reset setting is enabled.
+     */
+    protected function isGrandFinalWithReset(CompetitionMatch $match): bool
+    {
+        if (($match->settings['bracket_side'] ?? '') !== 'grand_final') {
+            return false;
+        }
+
+        $stage = $match->stage;
+
+        return (bool) ($stage?->settings['grand_final_reset'] ?? false);
+    }
+
+    /**
+     * Cancel the pre-generated reset match when the WB champion wins the grand final.
+     */
+    protected function cancelResetMatch(CompetitionMatch $grandFinal): void
+    {
+        $resetConnections = MatchConnection::query()
+            ->where('source_match_id', $grandFinal->id)
+            ->get();
+
+        $resetMatchIds = $resetConnections->pluck('target_match_id')->unique();
+
+        CompetitionMatch::whereIn('id', $resetMatchIds)
+            ->where('status', MatchStatus::Pending)
+            ->update(['status' => MatchStatus::Cancelled]);
     }
 
     /**

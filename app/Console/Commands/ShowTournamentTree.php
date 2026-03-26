@@ -97,6 +97,7 @@ class ShowTournamentTree extends Command
         $wb = $matches->filter(fn ($m) => ($m->settings['bracket_side'] ?? '') === 'winners');
         $lb = $matches->filter(fn ($m) => ($m->settings['bracket_side'] ?? '') === 'losers');
         $gf = $matches->filter(fn ($m) => ($m->settings['bracket_side'] ?? '') === 'grand_final');
+        $gfr = $matches->filter(fn ($m) => ($m->settings['bracket_side'] ?? '') === 'grand_final_reset');
         $tp = $matches->filter(fn ($m) => ($m->settings['bracket_side'] ?? '') === 'third_place');
 
         if ($wb->isNotEmpty()) {
@@ -121,6 +122,12 @@ class ShowTournamentTree extends Command
             $this->newLine();
             $this->info('  ╔══ GRAND FINAL ══╗');
             $this->renderRound('Grand Final', $gf);
+        }
+
+        if ($gfr->isNotEmpty()) {
+            $this->newLine();
+            $this->info('  ╔══ GRAND FINAL RESET ══╗');
+            $this->renderRound('Grand Final Reset', $gfr);
         }
 
         if ($tp->isNotEmpty()) {

@@ -469,3 +469,170 @@ it('plays through a full 4-team DE tournament with 3rd place match', function ()
         ->count();
     expect($allFinished)->toBe(7);
 });
+
+// ─── Grand Final Reset Tests ───
+
+function createDEStageWithGFReset(int $count): CompetitionStage
+{
+    $competition = Competition::factory()->tournament()->create();
+
+    $stage = CompetitionStage::factory()->create([
+        'competition_id' => $competition->id,
+        'stage_type' => StageType::DoubleElimination,
+        'order' => 1,
+        'settings' => ['grand_final_reset' => true],
+    ]);
+
+    for ($i = 1; $i <= $count; $i++) {
+        CompetitionParticipant::factory()->forTeam(Team::factory()->create())->create([
+            'competition_id' => $competition->id,
+            'seed' => $i,
+        ]);
+    }
+
+    return $stage;
+}
+
+it('generates a grand final reset match when enabled', function () {
+    $stage = createDEStageWithGFReset(4);
+
+    (new Generator)->generate($stage);
+
+    $matches = CompetitionMatch::where('competition_stage_id', $stage->id)->get();
+
+    // WB=3, LB=2, GF=1, GF Reset=1 = 7 total
+    expect($matches)->toHaveCount(7);
+
+    $resetMatch = $matches->first(fn ($m) => ($m->settings['bracket_side'] ?? '') === 'grand_final_reset');
+    expect($resetMatch)->not->toBeNull()
+        ->and($resetMatch->round_number)->toBe(202);
+
+    // Should have winner and loser connections from GF
+    $incoming = MatchConnection::where('target_match_id', $resetMatch->id)->get();
+    expect($incoming)->toHaveCount(2)
+        ->and($incoming->pluck('source_outcome')->sort()->values()->toArray())->toBe(['loser', 'winner'])
+        ->and($incoming->pluck('target_slot')->sort()->values()->toArray())->toBe([1, 2]);
+});
+
+it('does not generate a GF reset match when setting is disabled', function () {
+    $stage = createDEStageWithParticipants(4);
+
+    (new Generator)->generate($stage);
+
+    $matches = CompetitionMatch::where('competition_stage_id', $stage->id)->get();
+
+    expect($matches)->toHaveCount(6);
+
+    $resetMatch = $matches->first(fn ($m) => ($m->settings['bracket_side'] ?? '') === 'grand_final_reset');
+    expect($resetMatch)->toBeNull();
+});
+
+it('cancels reset match when WB champion wins grand final', function () {
+    $stage = createDEStageWithGFReset(4);
+
+    (new Generator)->generate($stage);
+
+    // Play through to GF
+    $wbR1M1 = freshMatch(
+        CompetitionMatch::where('competition_stage_id', $stage->id)
+            ->where('round_number', 1)->where('sequence', 1)->first()->id
+    );
+    resolveMatch($wbR1M1, 3, 1);
+
+    $wbR1M2 = freshMatch(
+        CompetitionMatch::where('competition_stage_id', $stage->id)
+            ->where('round_number', 1)->where('sequence', 2)->first()->id
+    );
+    resolveMatch($wbR1M2, 0, 3);
+
+    $wbFinal = freshMatch(
+        CompetitionMatch::where('competition_stage_id', $stage->id)
+            ->where('round_number', 2)->where('sequence', 1)->first()->id
+    );
+    resolveMatch($wbFinal, 3, 2);
+
+    $lbR1 = freshMatch(
+        CompetitionMatch::where('competition_stage_id', $stage->id)
+            ->where('round_number', 101)->where('sequence', 1)->first()->id
+    );
+    resolveMatch($lbR1, 3, 0);
+
+    $lbFinal = freshMatch(
+        CompetitionMatch::where('competition_stage_id', $stage->id)
+            ->where('round_number', 102)->where('sequence', 1)->first()->id
+    );
+    resolveMatch($lbFinal, 3, 2);
+
+    // GF: WB champion (slot 1) wins → reset should be cancelled
+    $gf = freshMatch(
+        CompetitionMatch::where('competition_stage_id', $stage->id)
+            ->where('round_number', 200)->where('sequence', 1)->first()->id
+    );
+    resolveMatch($gf, 3, 1);
+
+    $resetMatch = CompetitionMatch::where('competition_stage_id', $stage->id)
+        ->where('round_number', 202)
+        ->first();
+
+    expect($resetMatch->status)->toBe(MatchStatus::Cancelled)
+        ->and($resetMatch->matchParticipants)->toHaveCount(0);
+});
+
+it('plays reset match when LB champion wins grand final', function () {
+    $stage = createDEStageWithGFReset(4);
+
+    (new Generator)->generate($stage);
+
+    // Play through to GF
+    $wbR1M1 = freshMatch(
+        CompetitionMatch::where('competition_stage_id', $stage->id)
+            ->where('round_number', 1)->where('sequence', 1)->first()->id
+    );
+    resolveMatch($wbR1M1, 3, 1);
+
+    $wbR1M2 = freshMatch(
+        CompetitionMatch::where('competition_stage_id', $stage->id)
+            ->where('round_number', 1)->where('sequence', 2)->first()->id
+    );
+    resolveMatch($wbR1M2, 0, 3);
+
+    $wbFinal = freshMatch(
+        CompetitionMatch::where('competition_stage_id', $stage->id)
+            ->where('round_number', 2)->where('sequence', 1)->first()->id
+    );
+    resolveMatch($wbFinal, 3, 2);
+
+    $lbR1 = freshMatch(
+        CompetitionMatch::where('competition_stage_id', $stage->id)
+            ->where('round_number', 101)->where('sequence', 1)->first()->id
+    );
+    resolveMatch($lbR1, 3, 0);
+
+    $lbFinal = freshMatch(
+        CompetitionMatch::where('competition_stage_id', $stage->id)
+            ->where('round_number', 102)->where('sequence', 1)->first()->id
+    );
+    resolveMatch($lbFinal, 3, 2);
+
+    // GF: LB champion (slot 2) wins → reset should be played
+    $gf = freshMatch(
+        CompetitionMatch::where('competition_stage_id', $stage->id)
+            ->where('round_number', 200)->where('sequence', 1)->first()->id
+    );
+    resolveMatch($gf, 1, 3);
+
+    $resetMatch = freshMatch(
+        CompetitionMatch::where('competition_stage_id', $stage->id)
+            ->where('round_number', 202)->where('sequence', 1)->first()->id
+    );
+
+    expect($resetMatch->status)->toBe(MatchStatus::Pending)
+        ->and($resetMatch->matchParticipants)->toHaveCount(2);
+
+    // Play the reset match
+    resolveMatch($resetMatch, 3, 2);
+
+    $resetMatch->refresh();
+    expect($resetMatch->status)->toBe(MatchStatus::Finished)
+        ->and($resetMatch->winner_participant_id)->not->toBeNull();
+});
