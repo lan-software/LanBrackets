@@ -341,6 +341,12 @@ class SeedDemo extends Command
         array $options,
         string $playState,
     ): void {
+        if (Competition::where('name', $name)->exists()) {
+            $this->line("  {$name} — already exists, skipping.");
+
+            return;
+        }
+
         $competition = $createCompetition->execute(
             name: $name,
             type: CompetitionType::Tournament,
@@ -587,6 +593,12 @@ class SeedDemo extends Command
         Collection $teams,
     ): void {
         $name = '[Demo] GS → SE 16-Team — Finished';
+
+        if (Competition::where('name', $name)->exists()) {
+            $this->line("  {$name} — already exists, skipping.");
+
+            return;
+        }
 
         $competition = $createCompetition->execute(
             name: $name,
