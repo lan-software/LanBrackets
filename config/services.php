@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'lancore' => [
+        'auth_secret' => env('LANCORE_AUTH_SECRET'),
+        'url' => env('LANCORE_URL', 'http://localhost'),
+    ],
+
 ];

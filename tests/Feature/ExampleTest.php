@@ -1,7 +1,8 @@
 <?php
 
-test('returns a successful response', function () {
-    $response = $this->get(route('home'));
+test('home page requires authentication', function () {
+    $this->withoutVite();
 
-    $response->assertOk();
+    $this->get(route('home'))
+        ->assertForbidden();
 });
