@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Actions\AddCompetitionParticipantAction;
+use App\Actions\AddCompetitionStageAction;
 use App\Actions\CreateCompetitionAction;
 use App\Actions\GenerateBracketAction;
 use App\Actions\ReportMatchResultAction;
@@ -279,6 +280,17 @@ class SeedDemo extends Command
             teams: $teams->take(29),
             options: ['settings' => ['group_count' => 4, 'allow_draws' => true]],
             playState: 'finished',
+        );
+
+        // ── Multi-Stage ─────────────────────────────────────────────────
+
+        $this->newLine();
+        $this->info('Seeding Multi-Stage tournaments...');
+
+        $this->seedMultiStageTournament(
+            $createCompetition, $addParticipant, $generateBracket, $reportResult,
+            app(AddCompetitionStageAction::class),
+            teams: $teams->take(16),
         );
 
         $this->newLine();
@@ -559,5 +571,85 @@ class SeedDemo extends Command
         }
 
         $reportResult->execute($match, $scores);
+    }
+
+    /**
+     * Seed a multi-stage tournament: Group Stage (4 groups) → SE Playoffs.
+     *
+     * @param  Collection<int, Team>  $teams
+     */
+    protected function seedMultiStageTournament(
+        CreateCompetitionAction $createCompetition,
+        AddCompetitionParticipantAction $addParticipant,
+        GenerateBracketAction $generateBracket,
+        ReportMatchResultAction $reportResult,
+        AddCompetitionStageAction $addStage,
+        Collection $teams,
+    ): void {
+        $name = '[Demo] GS → SE 16-Team — Finished';
+
+        $competition = $createCompetition->execute(
+            name: $name,
+            type: CompetitionType::Tournament,
+            stageType: StageType::GroupStage,
+            options: ['settings' => ['group_count' => 4, 'allow_draws' => true]],
+        );
+
+        // Add playoff stage — sets progression_meta on the group stage
+        $addStage->execute($competition, StageType::SingleElimination, [
+            'name' => 'Playoffs',
+            'settings' => ['third_place_match' => true],
+            'progression_meta' => ['per_group' => 2],
+        ]);
+
+        foreach ($teams->values() as $index => $team) {
+            $addParticipant->execute($competition, $team, $index + 1);
+        }
+
+        // Generate and play through group stage
+        $groupStage = $competition->stages()->where('order', 1)->first();
+        $generateBracket->execute($groupStage);
+
+        $this->playAllMatches($reportResult, $competition);
+
+        // After group stage completes, advancement and playoff generation happens automatically.
+        // Now play through the playoffs.
+        $competition->refresh();
+        $playoffs = $competition->stages()->where('order', 2)->first();
+
+        if ($playoffs !== null) {
+            $this->playAllStageMatches($reportResult, $playoffs);
+        }
+
+        $competition->refresh();
+
+        $gsMatches = CompetitionMatch::where('competition_stage_id', $groupStage->id)
+            ->where('status', MatchStatus::Finished)->count();
+        $gsTotal = CompetitionMatch::where('competition_stage_id', $groupStage->id)->count();
+
+        $playoffMatches = $playoffs ? CompetitionMatch::where('competition_stage_id', $playoffs->id)
+            ->where('status', MatchStatus::Finished)->count() : 0;
+        $playoffTotal = $playoffs ? CompetitionMatch::where('competition_stage_id', $playoffs->id)->count() : 0;
+
+        $this->line("  {$name} (ID: {$competition->id}) — Groups: {$gsMatches}/{$gsTotal}, Playoffs: {$playoffMatches}/{$playoffTotal} ({$competition->status->value})");
+    }
+
+    /**
+     * Play all matches in a specific stage.
+     */
+    protected function playAllStageMatches(ReportMatchResultAction $reportResult, CompetitionStage $stage): void
+    {
+        $safety = 0;
+        $maxIterations = 500;
+
+        while ($safety++ < $maxIterations) {
+            $match = $this->findNextPlayableMatch($stage->id);
+
+            if ($match === null) {
+                break;
+            }
+
+            $this->resolveMatch($reportResult, $match);
+        }
     }
 }

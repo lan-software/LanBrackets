@@ -2,6 +2,7 @@
 
 namespace App\Domain\Competition\Formats\RoundRobin;
 
+use App\Domain\Competition\Concerns\DetectsStageCompletion;
 use App\Domain\Competition\Contracts\FormatResolver;
 use App\Enums\MatchResult;
 use App\Enums\MatchStatus;
@@ -10,6 +11,8 @@ use InvalidArgumentException;
 
 class Resolver implements FormatResolver
 {
+    use DetectsStageCompletion;
+
     /**
      * Resolve a completed round-robin match.
      *
@@ -58,6 +61,8 @@ class Resolver implements FormatResolver
                 'finished_at' => now(),
             ]);
 
+            $this->checkStageCompletion($match);
+
             return;
         }
 
@@ -74,5 +79,7 @@ class Resolver implements FormatResolver
             'loser_participant_id' => $loser->competition_participant_id,
             'finished_at' => now(),
         ]);
+
+        $this->checkStageCompletion($match);
     }
 }

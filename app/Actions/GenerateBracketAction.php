@@ -27,7 +27,10 @@ class GenerateBracketAction
             );
         }
 
-        $participantCount = $stage->competition->participants()->count();
+        $qualifiedIds = $stage->settings['qualified_participant_ids'] ?? null;
+        $participantCount = $qualifiedIds !== null
+            ? count($qualifiedIds)
+            : $stage->competition->participants()->count();
         $minParticipants = $this->minimumParticipants($stage);
 
         if ($participantCount < $minParticipants) {

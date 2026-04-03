@@ -2,6 +2,7 @@
 
 namespace App\Domain\Competition\Formats\Swiss;
 
+use App\Domain\Competition\Concerns\DetectsStageCompletion;
 use App\Domain\Competition\Contracts\FormatResolver;
 use App\Enums\MatchResult;
 use App\Enums\MatchStatus;
@@ -13,6 +14,8 @@ use InvalidArgumentException;
 
 class Resolver implements FormatResolver
 {
+    use DetectsStageCompletion;
+
     /**
      * Resolve a Swiss match and generate the next round if all current-round matches are done.
      */
@@ -25,6 +28,8 @@ class Resolver implements FormatResolver
         $totalRounds = $stage->settings['total_rounds'] ?? 3;
 
         if ($currentRound >= $totalRounds) {
+            $this->checkStageCompletion($match);
+
             return;
         }
 

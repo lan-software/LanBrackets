@@ -21,12 +21,7 @@ class Generator implements FormatGenerator
      */
     public function generate(CompetitionStage $stage): void
     {
-        $participants = $stage->competition
-            ->participants()
-            ->whereNull('metadata->disqualified')
-            ->orderBy('seed')
-            ->get();
-
+        $participants = $stage->getStageParticipants();
         $count = $participants->count();
 
         if ($count < 4) {

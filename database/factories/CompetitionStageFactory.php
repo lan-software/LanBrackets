@@ -67,4 +67,14 @@ class CompetitionStageFactory extends Factory
             'stage_type' => StageType::DoubleElimination,
         ]);
     }
+
+    /**
+     * @param  array<string, mixed>  $meta
+     */
+    public function withProgression(array $meta): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'progression_meta' => $meta,
+        ]);
+    }
 }

@@ -5,6 +5,7 @@ namespace App\Domain\Competition\Services;
 use App\Domain\Competition\Contracts\FormatGenerator;
 use App\Domain\Competition\Contracts\FormatResolver;
 use App\Domain\Competition\Contracts\FormatRuleset;
+use App\Domain\Competition\Contracts\StandingsCalculator;
 use App\Enums\StageType;
 use RuntimeException;
 
@@ -20,7 +21,7 @@ use RuntimeException;
 class FormatRegistry
 {
     /**
-     * @param array<string, array{generator: class-string|null, resolver: class-string|null, ruleset: class-string|null}> $formats
+     * @param  array<string, array{generator: class-string|null, resolver: class-string|null, ruleset: class-string|null}>  $formats
      */
     public function __construct(
         protected array $formats = [],
@@ -47,6 +48,11 @@ class FormatRegistry
         return $this->resolve($stageType, 'ruleset', FormatRuleset::class);
     }
 
+    public function standingsCalculator(StageType $stageType): StandingsCalculator
+    {
+        return $this->resolve($stageType, 'standings', StandingsCalculator::class);
+    }
+
     public function hasFormat(StageType $stageType): bool
     {
         $config = $this->formats[$stageType->value] ?? null;
@@ -67,7 +73,7 @@ class FormatRegistry
         if ($config === null || $config[$key] === null) {
             throw new RuntimeException(
                 "No {$key} registered for stage type [{$stageType->value}]. "
-                . 'Register implementations in config/competition-formats.php.'
+                .'Register implementations in config/competition-formats.php.'
             );
         }
 

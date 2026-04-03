@@ -2,6 +2,7 @@
 
 namespace App\Domain\Competition\Formats\SingleElimination;
 
+use App\Domain\Competition\Concerns\DetectsStageCompletion;
 use App\Domain\Competition\Contracts\FormatResolver;
 use App\Enums\MatchResult;
 use App\Enums\MatchStatus;
@@ -12,6 +13,8 @@ use InvalidArgumentException;
 
 class Resolver implements FormatResolver
 {
+    use DetectsStageCompletion;
+
     /**
      * Resolve a completed single-elimination match.
      *
@@ -66,6 +69,8 @@ class Resolver implements FormatResolver
 
         $this->advanceParticipant($match, $winner, 'winner');
         $this->advanceParticipant($match, $loser, 'loser');
+
+        $this->checkStageCompletion($match);
     }
 
     /**

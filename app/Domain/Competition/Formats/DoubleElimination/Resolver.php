@@ -2,6 +2,7 @@
 
 namespace App\Domain\Competition\Formats\DoubleElimination;
 
+use App\Domain\Competition\Concerns\DetectsStageCompletion;
 use App\Domain\Competition\Contracts\FormatResolver;
 use App\Enums\MatchResult;
 use App\Enums\MatchStatus;
@@ -12,6 +13,8 @@ use InvalidArgumentException;
 
 class Resolver implements FormatResolver
 {
+    use DetectsStageCompletion;
+
     /**
      * Resolve a completed double-elimination match.
      *
@@ -66,6 +69,7 @@ class Resolver implements FormatResolver
 
         if ($this->isGrandFinalWithReset($match) && $winner->slot === 1) {
             $this->cancelResetMatch($match);
+            $this->checkStageCompletion($match);
 
             return;
         }
@@ -74,6 +78,7 @@ class Resolver implements FormatResolver
         $this->advanceParticipant($match, $loser, 'loser');
 
         $this->cascadeByeResolution($match);
+        $this->checkStageCompletion($match);
     }
 
     /**

@@ -63,7 +63,10 @@ class CreateCompetitionAction
             'order' => 1,
             'stage_type' => $stageType,
             'status' => StageStatus::Pending,
-            'settings' => $ruleset->defaults(),
+            'settings' => array_merge(
+                $ruleset->defaults(),
+                $options['settings'] ?? [],
+            ),
         ]);
 
         return $competition->load('stages');
