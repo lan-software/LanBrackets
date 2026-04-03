@@ -22,7 +22,7 @@ class CreateCompetitionAction
     /**
      * Create a competition with its initial stage.
      *
-     * @param  array{description?: string, visibility?: CompetitionVisibility, settings?: array<string, mixed>}  $options
+     * @param  array{description?: string, visibility?: CompetitionVisibility, settings?: array<string, mixed>, external_reference_id?: string, source_system?: string, metadata?: array<string, mixed>}  $options
      */
     public function execute(
         string $name,
@@ -52,6 +52,10 @@ class CreateCompetitionAction
             'status' => CompetitionStatus::Draft,
             'visibility' => $options['visibility'] ?? CompetitionVisibility::Private,
             'settings' => $options['settings'] ?? [],
+            'external_reference_id' => $options['external_reference_id'] ?? null,
+            'source_system' => $options['source_system'] ?? null,
+            'metadata' => $options['metadata'] ?? [],
+            'share_token' => Str::random(32),
         ]);
 
         $ruleset = $this->formatRegistry->ruleset($stageType);

@@ -7,7 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 #[Fillable([
-    'name', 'token', 'plain_text_prefix', 'last_used_at', 'expires_at', 'revoked_at',
+    'name', 'token', 'plain_text_prefix', 'webhook_url', 'webhook_secret',
+    'last_used_at', 'expires_at', 'revoked_at',
 ])]
 class ApiToken extends Model
 {

@@ -6,6 +6,8 @@ use App\Domain\Competition\DTOs\StandingEntry;
 use App\Domain\Competition\Services\FormatRegistry;
 use App\Enums\CompetitionStatus;
 use App\Enums\StageStatus;
+use App\Events\CompetitionCompleted;
+use App\Events\StageCompleted;
 use App\Models\Competition;
 use App\Models\CompetitionStage;
 use InvalidArgumentException;
@@ -50,6 +52,8 @@ class CompleteStageAction
         if ($nextStage !== null && $qualifiers !== []) {
             $this->advanceAction->execute($stage, $nextStage);
         }
+
+        event(new StageCompleted($stage));
 
         if ($nextStage === null) {
             $this->checkCompetitionCompletion($stage->competition);
@@ -134,6 +138,7 @@ class CompleteStageAction
 
         if ($allComplete) {
             $competition->update(['status' => CompetitionStatus::Finished]);
+            event(new CompetitionCompleted($competition));
         }
     }
 }

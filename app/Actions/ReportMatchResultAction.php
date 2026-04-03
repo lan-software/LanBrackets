@@ -4,6 +4,7 @@ namespace App\Actions;
 
 use App\Domain\Competition\Services\FormatRegistry;
 use App\Enums\MatchStatus;
+use App\Events\MatchResultReported;
 use App\Models\CompetitionMatch;
 use InvalidArgumentException;
 
@@ -57,5 +58,7 @@ class ReportMatchResultAction
 
         $match->refresh();
         $resolver->resolve($match);
+
+        event(new MatchResultReported($match));
     }
 }

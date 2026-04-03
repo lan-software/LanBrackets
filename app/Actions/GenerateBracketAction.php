@@ -5,6 +5,7 @@ namespace App\Actions;
 use App\Domain\Competition\Services\FormatRegistry;
 use App\Enums\CompetitionStatus;
 use App\Enums\StageStatus;
+use App\Events\BracketGenerated;
 use App\Models\CompetitionStage;
 use InvalidArgumentException;
 
@@ -48,6 +49,8 @@ class GenerateBracketAction
             || $stage->competition->status === CompetitionStatus::RegistrationClosed) {
             $stage->competition->update(['status' => CompetitionStatus::Running]);
         }
+
+        event(new BracketGenerated($stage));
     }
 
     protected function minimumParticipants(CompetitionStage $stage): int

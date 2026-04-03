@@ -20,6 +20,9 @@ class StoreCompetitionRequest extends FormRequest
             'stage_type' => ['required', 'string', Rule::in(array_column(StageType::cases(), 'value'))],
             'description' => ['nullable', 'string'],
             'settings' => ['nullable', 'array'],
+            'external_reference_id' => ['nullable', 'string', 'max:255'],
+            'source_system' => ['nullable', 'string', 'max:255'],
+            'metadata' => ['nullable', 'array'],
         ];
     }
 

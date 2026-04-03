@@ -2,12 +2,18 @@
 
 namespace App\Providers;
 
+use App\Events\BracketGenerated;
+use App\Events\CompetitionCompleted;
+use App\Events\MatchResultReported;
+use App\Events\StageCompleted;
+use App\Listeners\DispatchWebhook;
 use App\Models\Team;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -28,6 +34,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureDefaults();
         $this->configureMorphMap();
+        $this->configureEvents();
     }
 
     /**
@@ -50,6 +57,17 @@ class AppServiceProvider extends ServiceProvider
                 ->uncompromised()
             : null,
         );
+    }
+
+    /**
+     * Register event listeners for webhook dispatch.
+     */
+    protected function configureEvents(): void
+    {
+        Event::listen(BracketGenerated::class, [DispatchWebhook::class, 'handleBracketGenerated']);
+        Event::listen(MatchResultReported::class, [DispatchWebhook::class, 'handleMatchResultReported']);
+        Event::listen(StageCompleted::class, [DispatchWebhook::class, 'handleStageCompleted']);
+        Event::listen(CompetitionCompleted::class, [DispatchWebhook::class, 'handleCompetitionCompleted']);
     }
 
     /**

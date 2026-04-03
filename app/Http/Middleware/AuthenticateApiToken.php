@@ -25,6 +25,8 @@ class AuthenticateApiToken
 
         $apiToken->update(['last_used_at' => now()]);
 
+        $request->attributes->set('api_token', $apiToken);
+
         return $next($request);
     }
 }
