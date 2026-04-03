@@ -50,6 +50,9 @@ class Generator implements FormatGenerator
         // ── Losers Bracket ──
         $lbMatches = $this->generateLosersBracket($stage, $wbMatches, $wbRounds);
 
+        // Advance WB BYE winners through winner connections now that rounds are wired
+        $this->advanceByeWinners($stage);
+
         // ── Grand Final ──
         $grandFinal = $this->generateGrandFinal($stage, $wbMatches, $lbMatches, $wbRounds);
 
@@ -551,5 +554,37 @@ class Generator implements FormatGenerator
             ->where('match_id', $match->id)
             ->where('competition_participant_id', $participant->id)
             ->update(['result' => 'bye']);
+    }
+
+    /**
+     * Advance winners of WB R1 BYE matches through their winner connections.
+     *
+     * BYE matches are resolved during WB round 1 creation, before connections
+     * exist. This runs after all connections are wired to place BYE winners
+     * into their WB R2 matches.
+     */
+    protected function advanceByeWinners(CompetitionStage $stage): void
+    {
+        $byeMatches = CompetitionMatch::query()
+            ->where('competition_stage_id', $stage->id)
+            ->where('round_number', 1)
+            ->where('status', MatchStatus::Finished)
+            ->whereNotNull('winner_participant_id')
+            ->get();
+
+        foreach ($byeMatches as $match) {
+            $connections = MatchConnection::query()
+                ->where('source_match_id', $match->id)
+                ->where('source_outcome', 'winner')
+                ->get();
+
+            foreach ($connections as $connection) {
+                MatchParticipant::create([
+                    'match_id' => $connection->target_match_id,
+                    'competition_participant_id' => $match->winner_participant_id,
+                    'slot' => $connection->target_slot,
+                ]);
+            }
+        }
     }
 }

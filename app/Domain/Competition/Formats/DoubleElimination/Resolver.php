@@ -72,6 +72,8 @@ class Resolver implements FormatResolver
 
         $this->advanceParticipant($match, $winner, 'winner');
         $this->advanceParticipant($match, $loser, 'loser');
+
+        $this->cascadeByeResolution($match);
     }
 
     /**
@@ -123,6 +125,74 @@ class Resolver implements FormatResolver
                 'competition_participant_id' => $participant->competition_participant_id,
                 'slot' => $connection->target_slot,
             ]);
+        }
+    }
+
+    /**
+     * Auto-resolve downstream matches that received only 1 participant due to BYEs.
+     *
+     * When a WB BYE match has no loser, the LB match receiving from that slot
+     * will only get 1 participant once all feeders have resolved. This method
+     * detects and auto-advances those matches, cascading further if needed.
+     */
+    protected function cascadeByeResolution(CompetitionMatch $resolvedMatch): void
+    {
+        $targetMatchIds = MatchConnection::query()
+            ->where('source_match_id', $resolvedMatch->id)
+            ->pluck('target_match_id')
+            ->unique();
+
+        foreach ($targetMatchIds as $targetMatchId) {
+            $targetMatch = CompetitionMatch::find($targetMatchId);
+
+            if ($targetMatch->status !== MatchStatus::Pending) {
+                continue;
+            }
+
+            $participantCount = $targetMatch->matchParticipants()->count();
+
+            if ($participantCount !== 1) {
+                continue;
+            }
+
+            // Check that all incoming connections have finished source matches
+            $allFeedersFinished = MatchConnection::query()
+                ->where('target_match_id', $targetMatch->id)
+                ->get()
+                ->every(fn ($conn) => CompetitionMatch::find($conn->source_match_id)->status === MatchStatus::Finished);
+
+            if (! $allFeedersFinished) {
+                continue;
+            }
+
+            // Auto-BYE this match
+            $participant = $targetMatch->matchParticipants()->first();
+            $competitionParticipant = $participant->competitionParticipant;
+
+            $targetMatch->update([
+                'status' => MatchStatus::Finished,
+                'winner_participant_id' => $competitionParticipant->id,
+                'finished_at' => now(),
+            ]);
+
+            $participant->update(['result' => 'bye']);
+
+            // Advance winner through connections
+            $winnerConnections = MatchConnection::query()
+                ->where('source_match_id', $targetMatch->id)
+                ->where('source_outcome', 'winner')
+                ->get();
+
+            foreach ($winnerConnections as $connection) {
+                MatchParticipant::create([
+                    'match_id' => $connection->target_match_id,
+                    'competition_participant_id' => $competitionParticipant->id,
+                    'slot' => $connection->target_slot,
+                ]);
+            }
+
+            // Recurse for further cascading
+            $this->cascadeByeResolution($targetMatch);
         }
     }
 }

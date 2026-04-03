@@ -271,6 +271,51 @@ it('handles BYE rotation for odd participant count across rounds', function () {
     expect($pending)->toBe(0);
 });
 
+// ─── Large Tournament Tests (29 participants) ───
+
+it('generates correct round 1 for 29 participants', function () {
+    $stage = createSwissStageWithParticipants(29);
+
+    app(Generator::class)->generate($stage);
+
+    $matches = CompetitionMatch::where('competition_stage_id', $stage->id)->get();
+
+    // 29p (odd) → 14 real matches + 1 BYE = 15 matches in round 1
+    expect($matches)->toHaveCount(15);
+
+    $byeMatches = $matches->where('status', MatchStatus::Finished);
+    expect($byeMatches)->toHaveCount(1);
+
+    // ceil(log2(29)) = 5 total rounds
+    $stage->refresh();
+    expect($stage->settings['total_rounds'])->toBe(5);
+});
+
+it('plays through a full 29-participant Swiss tournament', function () {
+    $stage = createSwissStageWithParticipants(29);
+
+    app(Generator::class)->generate($stage);
+
+    $totalRounds = $stage->fresh()->settings['total_rounds']; // 5
+    expect($totalRounds)->toBe(5);
+
+    for ($round = 1; $round <= $totalRounds; $round++) {
+        resolveAllPendingInRound($stage, $round);
+    }
+
+    // Each round has 14 real matches + 1 BYE = 15 matches
+    // 5 rounds * 15 matches = 75 total
+    $allMatches = CompetitionMatch::where('competition_stage_id', $stage->id)->get();
+    expect($allMatches)->toHaveCount(75)
+        ->and($allMatches->where('status', MatchStatus::Finished))->toHaveCount(75);
+
+    // No round 6 generated
+    $round6 = CompetitionMatch::where('competition_stage_id', $stage->id)
+        ->where('round_number', 6)
+        ->count();
+    expect($round6)->toBe(0);
+});
+
 // ─── Ruleset Tests ───
 
 it('provides default settings', function () {

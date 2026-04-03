@@ -108,6 +108,15 @@ class SeedDemo extends Command
             playState: 'ready',
         );
 
+        $this->seedTournament(
+            $createCompetition, $addParticipant, $generateBracket, $reportResult,
+            name: '[Demo] SE 29-Team (BYEs) — Finished',
+            stageType: StageType::SingleElimination,
+            teams: $teams->take(29),
+            options: ['settings' => ['third_place_match' => true]],
+            playState: 'finished',
+        );
+
         // ── Double Elimination ──────────────────────────────────────────
 
         $this->newLine();
@@ -138,6 +147,15 @@ class SeedDemo extends Command
             teams: $teams->slice(0, 6),
             options: ['settings' => ['third_place_match' => true]],
             playState: 'ready',
+        );
+
+        $this->seedTournament(
+            $createCompetition, $addParticipant, $generateBracket, $reportResult,
+            name: '[Demo] DE 29-Team + Reset — Finished',
+            stageType: StageType::DoubleElimination,
+            teams: $teams->take(29),
+            options: ['settings' => ['grand_final_reset' => true, 'third_place_match' => true]],
+            playState: 'finished',
         );
 
         // ── Round Robin ─────────────────────────────────────────────────
@@ -172,6 +190,15 @@ class SeedDemo extends Command
             playState: 'ready',
         );
 
+        $this->seedTournament(
+            $createCompetition, $addParticipant, $generateBracket, $reportResult,
+            name: '[Demo] RR 29-Team (BYEs) — Finished',
+            stageType: StageType::RoundRobin,
+            teams: $teams->take(29),
+            options: ['settings' => ['points_win' => 3, 'points_draw' => 1, 'allow_draws' => true]],
+            playState: 'finished',
+        );
+
         // ── Swiss ───────────────────────────────────────────────────────
 
         $this->newLine();
@@ -204,6 +231,15 @@ class SeedDemo extends Command
             playState: 'ready',
         );
 
+        $this->seedTournament(
+            $createCompetition, $addParticipant, $generateBracket, $reportResult,
+            name: '[Demo] Swiss 29-Team — Finished',
+            stageType: StageType::Swiss,
+            teams: $teams->take(29),
+            options: ['settings' => ['total_rounds' => 5]],
+            playState: 'finished',
+        );
+
         // ── Group Stage ─────────────────────────────────────────────────
 
         $this->newLine();
@@ -234,6 +270,15 @@ class SeedDemo extends Command
             teams: $teams->take(16),
             options: ['settings' => ['group_count' => 4]],
             playState: 'ready',
+        );
+
+        $this->seedTournament(
+            $createCompetition, $addParticipant, $generateBracket, $reportResult,
+            name: '[Demo] GS 29-Team (4 Groups) — Finished',
+            stageType: StageType::GroupStage,
+            teams: $teams->take(29),
+            options: ['settings' => ['group_count' => 4, 'allow_draws' => true]],
+            playState: 'finished',
         );
 
         $this->newLine();

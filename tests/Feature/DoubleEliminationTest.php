@@ -304,6 +304,81 @@ it('plays through a full 4-team double elimination tournament', function () {
         ->and($gf->winner_participant_id)->not->toBeNull();
 });
 
+// ─── Large Bracket Tests (29 participants) ───
+
+it('generates correct structure for 29 participants', function () {
+    $stage = createDEStageWithParticipants(29);
+
+    (new Generator)->generate($stage);
+
+    $matches = CompetitionMatch::where('competition_stage_id', $stage->id)->get();
+
+    // WB: 16+8+4+2+1 = 31
+    // LB: 8+8+4+4+2+2+1+1 = 30
+    // GF: 1
+    // Total: 62
+    $wbMatches = $matches->filter(fn ($m) => ($m->settings['bracket_side'] ?? '') === 'winners');
+    $lbMatches = $matches->filter(fn ($m) => ($m->settings['bracket_side'] ?? '') === 'losers');
+    $gfMatches = $matches->filter(fn ($m) => ($m->settings['bracket_side'] ?? '') === 'grand_final');
+
+    expect($wbMatches)->toHaveCount(31)
+        ->and($lbMatches)->toHaveCount(30)
+        ->and($gfMatches)->toHaveCount(1)
+        ->and($matches)->toHaveCount(62);
+
+    // 3 BYEs in WB R1 (32 - 29)
+    $wbR1Byes = CompetitionMatch::where('competition_stage_id', $stage->id)
+        ->where('round_number', 1)
+        ->where('status', MatchStatus::Finished)
+        ->count();
+    expect($wbR1Byes)->toBe(3);
+});
+
+it('plays through a full 29-team double elimination tournament', function () {
+    $stage = createDEStageWithParticipants(29);
+
+    (new Generator)->generate($stage);
+
+    // Play all matches iteratively until none remain
+    $safety = 0;
+    $maxIterations = 200;
+
+    while ($safety++ < $maxIterations) {
+        $match = CompetitionMatch::query()
+            ->where('competition_stage_id', $stage->id)
+            ->where('status', MatchStatus::Pending)
+            ->orderBy('round_number')
+            ->orderBy('sequence')
+            ->withCount('matchParticipants')
+            ->get()
+            ->where('match_participants_count', 2)
+            ->first();
+
+        if ($match === null) {
+            break;
+        }
+
+        $match->load('matchParticipants');
+        $match->matchParticipants->firstWhere('slot', 1)->update(['score' => 3]);
+        $match->matchParticipants->firstWhere('slot', 2)->update(['score' => 1]);
+        (new Resolver)->resolve($match);
+    }
+
+    $finished = CompetitionMatch::where('competition_stage_id', $stage->id)
+        ->where('status', MatchStatus::Finished)
+        ->count();
+
+    // All 62 matches should be finished
+    expect($finished)->toBe(62);
+
+    // Grand Final should have a winner
+    $gf = CompetitionMatch::where('competition_stage_id', $stage->id)
+        ->where('round_number', 200)
+        ->first();
+    expect($gf->status)->toBe(MatchStatus::Finished)
+        ->and($gf->winner_participant_id)->not->toBeNull();
+});
+
 // ─── Ruleset Tests ───
 
 it('provides double elimination default settings', function () {

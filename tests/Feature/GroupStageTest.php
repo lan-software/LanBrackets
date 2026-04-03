@@ -234,6 +234,58 @@ it('plays through a full group stage with 8 participants in 2 groups', function 
     expect($allFinished)->toBe(12);
 });
 
+// ─── Large Tournament Tests (29 participants) ───
+
+it('creates correct groups for 29 participants', function () {
+    // 29 participants, 4 groups → groups of 8,7,7,7
+    $stage = createGSStageWithParticipants(29, groupCount: 4);
+
+    app(Generator::class)->generate($stage);
+
+    $groups = CompetitionStageGroup::where('competition_stage_id', $stage->id)
+        ->orderBy('sequence')
+        ->get();
+
+    expect($groups)->toHaveCount(4);
+
+    $totalMembers = CompetitionStageGroupMember::query()
+        ->whereHas('group', fn ($q) => $q->where('competition_stage_id', $stage->id))
+        ->count();
+
+    expect($totalMembers)->toBe(29);
+
+    // Verify each group has 7 or 8 members
+    foreach ($groups as $group) {
+        $memberCount = CompetitionStageGroupMember::where('competition_stage_group_id', $group->id)->count();
+        expect($memberCount)->toBeGreaterThanOrEqual(7)
+            ->and($memberCount)->toBeLessThanOrEqual(8);
+    }
+});
+
+it('plays through a full group stage with 29 participants in 4 groups', function () {
+    $stage = createGSStageWithParticipants(29, groupCount: 4);
+
+    app(Generator::class)->generate($stage);
+
+    $matches = CompetitionMatch::where('competition_stage_id', $stage->id)
+        ->where('status', MatchStatus::Pending)
+        ->get();
+
+    foreach ($matches as $match) {
+        $match->matchParticipants->firstWhere('slot', 1)->update(['score' => 3]);
+        $match->matchParticipants->firstWhere('slot', 2)->update(['score' => 1]);
+        (new Resolver)->resolve($match);
+    }
+
+    $allFinished = CompetitionMatch::where('competition_stage_id', $stage->id)
+        ->where('status', MatchStatus::Finished)
+        ->count();
+
+    $totalMatches = CompetitionMatch::where('competition_stage_id', $stage->id)->count();
+
+    expect($allFinished)->toBe($totalMatches);
+});
+
 // ─── Ruleset Tests ───
 
 it('provides default settings', function () {

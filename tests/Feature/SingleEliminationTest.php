@@ -334,6 +334,144 @@ it('resolves single elimination via format registry', function () {
         ->and($registry->ruleset(StageType::SingleElimination))->toBeInstanceOf(Ruleset::class);
 });
 
+// ─── Large Bracket Tests (29 participants) ───
+
+it('generates a bracket for 16 participants', function () {
+    $stage = createStageWithParticipants(16);
+
+    (new Generator)->generate($stage);
+
+    $matches = CompetitionMatch::where('competition_stage_id', $stage->id)->get();
+
+    // 16p → 4 rounds: 8 + 4 + 2 + 1 = 15 matches
+    expect($matches)->toHaveCount(15)
+        ->and($matches->where('round_number', 1))->toHaveCount(8)
+        ->and($matches->where('round_number', 2))->toHaveCount(4)
+        ->and($matches->where('round_number', 3))->toHaveCount(2)
+        ->and($matches->where('round_number', 4))->toHaveCount(1);
+
+    // No BYEs for a perfect power-of-2
+    $byeMatches = $matches->where('round_number', 1)->where('status', MatchStatus::Finished);
+    expect($byeMatches)->toHaveCount(0);
+});
+
+it('generates a bracket for 29 participants with BYEs', function () {
+    $stage = createStageWithParticipants(29);
+
+    (new Generator)->generate($stage);
+
+    $matches = CompetitionMatch::where('competition_stage_id', $stage->id)->get();
+
+    // 29p → bracket size 32 → 5 rounds: 16 + 8 + 4 + 2 + 1 = 31 matches
+    expect($matches)->toHaveCount(31)
+        ->and($matches->where('round_number', 1))->toHaveCount(16)
+        ->and($matches->where('round_number', 2))->toHaveCount(8)
+        ->and($matches->where('round_number', 3))->toHaveCount(4)
+        ->and($matches->where('round_number', 4))->toHaveCount(2)
+        ->and($matches->where('round_number', 5))->toHaveCount(1);
+
+    // 3 BYEs (32 - 29 = 3 empty slots)
+    $byeMatches = $matches->where('round_number', 1)->where('status', MatchStatus::Finished);
+    expect($byeMatches)->toHaveCount(3);
+});
+
+it('plays through a full 29-team single elimination tournament', function () {
+    $stage = createStageWithParticipants(29);
+
+    (new Generator)->generate($stage);
+
+    $allMatches = CompetitionMatch::where('competition_stage_id', $stage->id)->get();
+    expect($allMatches)->toHaveCount(31);
+
+    // Play all playable matches iteratively
+    $safety = 0;
+    while ($safety++ < 100) {
+        $match = CompetitionMatch::query()
+            ->where('competition_stage_id', $stage->id)
+            ->where('status', MatchStatus::Pending)
+            ->orderBy('round_number')
+            ->orderBy('sequence')
+            ->withCount('matchParticipants')
+            ->get()
+            ->where('match_participants_count', 2)
+            ->first();
+
+        if ($match === null) {
+            break;
+        }
+
+        $match->load('matchParticipants');
+        $match->matchParticipants->firstWhere('slot', 1)->update(['score' => 3]);
+        $match->matchParticipants->firstWhere('slot', 2)->update(['score' => 1]);
+        (new Resolver)->resolve($match);
+    }
+
+    // All 31 matches should be finished (3 BYEs + 28 played)
+    $finished = CompetitionMatch::where('competition_stage_id', $stage->id)
+        ->where('status', MatchStatus::Finished)
+        ->count();
+    expect($finished)->toBe(31);
+
+    // Final should have a winner
+    $final = CompetitionMatch::where('competition_stage_id', $stage->id)
+        ->where('round_number', 5)
+        ->first();
+    expect($final->winner_participant_id)->not->toBeNull();
+});
+
+it('plays through a full 29-team SE tournament with 3rd place match', function () {
+    $competition = Competition::factory()->tournament()->create();
+
+    $stage = CompetitionStage::factory()->singleElimination()->create([
+        'competition_id' => $competition->id,
+        'order' => 1,
+        'settings' => ['third_place_match' => true],
+    ]);
+
+    for ($i = 1; $i <= 29; $i++) {
+        CompetitionParticipant::factory()->forTeam(Team::factory()->create())->create([
+            'competition_id' => $competition->id,
+            'seed' => $i,
+        ]);
+    }
+
+    (new Generator)->generate($stage);
+
+    $allMatches = CompetitionMatch::where('competition_stage_id', $stage->id)->get();
+
+    // 31 regular + 1 third place = 32 matches
+    expect($allMatches)->toHaveCount(32);
+
+    // Play all playable matches iteratively
+    $safety = 0;
+    while ($safety++ < 100) {
+        $match = CompetitionMatch::query()
+            ->where('competition_stage_id', $stage->id)
+            ->where('status', MatchStatus::Pending)
+            ->orderBy('round_number')
+            ->orderBy('sequence')
+            ->withCount('matchParticipants')
+            ->get()
+            ->where('match_participants_count', 2)
+            ->first();
+
+        if ($match === null) {
+            break;
+        }
+
+        $match->load('matchParticipants');
+        $match->matchParticipants->firstWhere('slot', 1)->update(['score' => 3]);
+        $match->matchParticipants->firstWhere('slot', 2)->update(['score' => 1]);
+        (new Resolver)->resolve($match);
+    }
+
+    // All 32 matches should be finished
+    $finished = CompetitionMatch::where('competition_stage_id', $stage->id)
+        ->where('status', MatchStatus::Finished)
+        ->count();
+    expect($finished)->toBe(32);
+});
+
 // ─── Third Place Match Tests ───
 
 function createStageWithThirdPlace(int $count): CompetitionStage

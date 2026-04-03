@@ -266,6 +266,54 @@ it('plays through a full 4-team round robin', function () {
     expect($allFinished)->toBe(6);
 });
 
+// ─── Large Tournament Tests (29 participants) ───
+
+it('generates correct matches for 29 participants with BYEs', function () {
+    $stage = createRRStageWithParticipants(29);
+
+    app(Generator::class)->generate($stage);
+
+    $matches = CompetitionMatch::where('competition_stage_id', $stage->id)->get();
+
+    // 29 is odd → add virtual BYE → 30 participants
+    // 30p → 29 rounds, 15 matches per round = 435 matches total
+    // 29 BYE matches (one per participant)
+    expect($matches)->toHaveCount(435);
+
+    $byeMatches = $matches->where('status', MatchStatus::Finished);
+    expect($byeMatches)->toHaveCount(29);
+
+    // Real matches: 435 - 29 = 406
+    $realMatches = $matches->where('status', MatchStatus::Pending);
+    expect($realMatches)->toHaveCount(406);
+});
+
+it('plays through a full 29-team round robin', function () {
+    $stage = createRRStageWithParticipants(29);
+
+    app(Generator::class)->generate($stage);
+
+    $matches = CompetitionMatch::where('competition_stage_id', $stage->id)
+        ->where('status', MatchStatus::Pending)
+        ->get();
+
+    // C(29,2) = 406 real matches
+    expect($matches)->toHaveCount(406);
+
+    foreach ($matches as $match) {
+        $match->matchParticipants->firstWhere('slot', 1)->update(['score' => 3]);
+        $match->matchParticipants->firstWhere('slot', 2)->update(['score' => 1]);
+        (new Resolver)->resolve($match);
+    }
+
+    $allFinished = CompetitionMatch::where('competition_stage_id', $stage->id)
+        ->where('status', MatchStatus::Finished)
+        ->count();
+
+    // 406 played + 29 BYE = 435
+    expect($allFinished)->toBe(435);
+});
+
 // ─── Ruleset Tests ───
 
 it('provides default settings', function () {
