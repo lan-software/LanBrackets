@@ -338,7 +338,7 @@ it('resolves double elimination via format registry', function () {
 it('still reports unimplemented formats correctly', function () {
     $registry = new FormatRegistry;
 
-    expect($registry->hasFormat(StageType::Swiss))->toBeFalse();
+    expect($registry->hasFormat(StageType::RaceHeat))->toBeFalse();
 });
 
 // ─── Third Place Match Tests ───

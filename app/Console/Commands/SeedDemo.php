@@ -12,6 +12,7 @@ use App\Enums\MatchStatus;
 use App\Enums\StageType;
 use App\Models\Competition;
 use App\Models\CompetitionMatch;
+use App\Models\CompetitionStage;
 use App\Models\Team;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
@@ -20,7 +21,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 #[Signature('db:seed-demo {--fresh : Truncate existing demo data before seeding}')]
-#[Description('Seed the database with demo tournaments in various states')]
+#[Description('Seed the database with demo tournaments in various states for all formats')]
 class SeedDemo extends Command
 {
     /** @var string[] */
@@ -75,38 +76,164 @@ class SeedDemo extends Command
         $teams = $this->createTeams();
         $this->line("  Created {$teams->count()} teams.");
 
+        // ── Single Elimination ──────────────────────────────────────────
+
         $this->newLine();
         $this->info('Seeding Single Elimination tournaments...');
-        $this->seedFormat(
-            createCompetition: $createCompetition,
-            addParticipant: $addParticipant,
-            generateBracket: $generateBracket,
-            reportResult: $reportResult,
+
+        $this->seedTournament(
+            $createCompetition, $addParticipant, $generateBracket, $reportResult,
+            name: '[Demo] SE 16-Team — Finished',
             stageType: StageType::SingleElimination,
-            teams: $teams,
-            participantCount: 16,
-            options: [
-                'finished' => ['settings' => ['third_place_match' => true]],
-                'partial' => [],
-                'ready' => ['settings' => ['third_place_match' => true]],
-            ],
+            teams: $teams->take(16),
+            options: ['settings' => ['third_place_match' => true]],
+            playState: 'finished',
         );
+
+        $this->seedTournament(
+            $createCompetition, $addParticipant, $generateBracket, $reportResult,
+            name: '[Demo] SE 8-Team — In Progress',
+            stageType: StageType::SingleElimination,
+            teams: $teams->slice(0, 8),
+            options: [],
+            playState: 'partial',
+        );
+
+        $this->seedTournament(
+            $createCompetition, $addParticipant, $generateBracket, $reportResult,
+            name: '[Demo] SE 5-Team (BYEs) — Ready',
+            stageType: StageType::SingleElimination,
+            teams: $teams->slice(0, 5),
+            options: ['settings' => ['third_place_match' => true]],
+            playState: 'ready',
+        );
+
+        // ── Double Elimination ──────────────────────────────────────────
 
         $this->newLine();
         $this->info('Seeding Double Elimination tournaments...');
-        $this->seedFormat(
-            createCompetition: $createCompetition,
-            addParticipant: $addParticipant,
-            generateBracket: $generateBracket,
-            reportResult: $reportResult,
+
+        $this->seedTournament(
+            $createCompetition, $addParticipant, $generateBracket, $reportResult,
+            name: '[Demo] DE 8-Team + Reset — Finished',
             stageType: StageType::DoubleElimination,
-            teams: $teams,
-            participantCount: 16,
-            options: [
-                'finished' => ['settings' => ['grand_final_reset' => true, 'third_place_match' => true]],
-                'partial' => ['settings' => ['grand_final_reset' => true]],
-                'ready' => ['settings' => ['third_place_match' => true]],
-            ],
+            teams: $teams->slice(0, 8),
+            options: ['settings' => ['grand_final_reset' => true, 'third_place_match' => true]],
+            playState: 'finished',
+        );
+
+        $this->seedTournament(
+            $createCompetition, $addParticipant, $generateBracket, $reportResult,
+            name: '[Demo] DE 16-Team — In Progress',
+            stageType: StageType::DoubleElimination,
+            teams: $teams->take(16),
+            options: ['settings' => ['grand_final_reset' => true]],
+            playState: 'partial',
+        );
+
+        $this->seedTournament(
+            $createCompetition, $addParticipant, $generateBracket, $reportResult,
+            name: '[Demo] DE 6-Team — Ready',
+            stageType: StageType::DoubleElimination,
+            teams: $teams->slice(0, 6),
+            options: ['settings' => ['third_place_match' => true]],
+            playState: 'ready',
+        );
+
+        // ── Round Robin ─────────────────────────────────────────────────
+
+        $this->newLine();
+        $this->info('Seeding Round Robin tournaments...');
+
+        $this->seedTournament(
+            $createCompetition, $addParticipant, $generateBracket, $reportResult,
+            name: '[Demo] RR 6-Team — Finished',
+            stageType: StageType::RoundRobin,
+            teams: $teams->slice(0, 6),
+            options: ['settings' => ['points_win' => 3, 'points_draw' => 1, 'allow_draws' => true]],
+            playState: 'finished',
+        );
+
+        $this->seedTournament(
+            $createCompetition, $addParticipant, $generateBracket, $reportResult,
+            name: '[Demo] RR 8-Team — In Progress',
+            stageType: StageType::RoundRobin,
+            teams: $teams->slice(0, 8),
+            options: ['settings' => ['allow_draws' => true]],
+            playState: 'partial',
+        );
+
+        $this->seedTournament(
+            $createCompetition, $addParticipant, $generateBracket, $reportResult,
+            name: '[Demo] RR 5-Team (BYEs) — Ready',
+            stageType: StageType::RoundRobin,
+            teams: $teams->slice(0, 5),
+            options: [],
+            playState: 'ready',
+        );
+
+        // ── Swiss ───────────────────────────────────────────────────────
+
+        $this->newLine();
+        $this->info('Seeding Swiss tournaments...');
+
+        $this->seedTournament(
+            $createCompetition, $addParticipant, $generateBracket, $reportResult,
+            name: '[Demo] Swiss 8-Team — Finished',
+            stageType: StageType::Swiss,
+            teams: $teams->slice(0, 8),
+            options: [],
+            playState: 'finished',
+        );
+
+        $this->seedTournament(
+            $createCompetition, $addParticipant, $generateBracket, $reportResult,
+            name: '[Demo] Swiss 12-Team — In Progress',
+            stageType: StageType::Swiss,
+            teams: $teams->slice(0, 12),
+            options: ['settings' => ['total_rounds' => 4]],
+            playState: 'partial',
+        );
+
+        $this->seedTournament(
+            $createCompetition, $addParticipant, $generateBracket, $reportResult,
+            name: '[Demo] Swiss 16-Team — Ready',
+            stageType: StageType::Swiss,
+            teams: $teams->take(16),
+            options: [],
+            playState: 'ready',
+        );
+
+        // ── Group Stage ─────────────────────────────────────────────────
+
+        $this->newLine();
+        $this->info('Seeding Group Stage tournaments...');
+
+        $this->seedTournament(
+            $createCompetition, $addParticipant, $generateBracket, $reportResult,
+            name: '[Demo] GS 8-Team (2 Groups) — Finished',
+            stageType: StageType::GroupStage,
+            teams: $teams->slice(0, 8),
+            options: ['settings' => ['group_count' => 2, 'allow_draws' => true]],
+            playState: 'finished',
+        );
+
+        $this->seedTournament(
+            $createCompetition, $addParticipant, $generateBracket, $reportResult,
+            name: '[Demo] GS 12-Team (3 Groups) — In Progress',
+            stageType: StageType::GroupStage,
+            teams: $teams->slice(0, 12),
+            options: ['settings' => ['group_count' => 3, 'allow_draws' => true]],
+            playState: 'partial',
+        );
+
+        $this->seedTournament(
+            $createCompetition, $addParticipant, $generateBracket, $reportResult,
+            name: '[Demo] GS 16-Team (4 Groups) — Ready',
+            stageType: StageType::GroupStage,
+            teams: $teams->take(16),
+            options: ['settings' => ['group_count' => 4]],
+            playState: 'ready',
         );
 
         $this->newLine();
@@ -141,85 +268,27 @@ class SeedDemo extends Command
     }
 
     /**
-     * Seed a specific format with finished, partial, and ready-to-start tournaments.
+     * Seed a single tournament with the given play state.
      *
      * @param  Collection<int, Team>  $teams
-     * @param  array{finished?: array<string, mixed>, partial?: array<string, mixed>, ready?: array<string, mixed>}  $options
+     * @param  array<string, mixed>  $options
      */
-    protected function seedFormat(
+    protected function seedTournament(
         CreateCompetitionAction $createCompetition,
         AddCompetitionParticipantAction $addParticipant,
         GenerateBracketAction $generateBracket,
         ReportMatchResultAction $reportResult,
-        StageType $stageType,
-        Collection $teams,
-        int $participantCount,
-        array $options,
-    ): void {
-        $label = str_replace('_', ' ', ucfirst($stageType->value));
-
-        // (a) Finished tournament
-        $this->line("  Creating finished {$label}...");
-        $finished = $this->createTournament(
-            createCompetition: $createCompetition,
-            addParticipant: $addParticipant,
-            generateBracket: $generateBracket,
-            name: "[Demo] {$label} — Finished",
-            stageType: $stageType,
-            teams: $teams->take($participantCount),
-            stageSettings: $options['finished'] ?? [],
-        );
-        $this->playAllMatches($reportResult, $finished);
-        $this->line("    ✓ {$finished->name} (ID: {$finished->id})");
-
-        // (b) Partially finished tournament
-        $this->line("  Creating partially played {$label}...");
-        $partial = $this->createTournament(
-            createCompetition: $createCompetition,
-            addParticipant: $addParticipant,
-            generateBracket: $generateBracket,
-            name: "[Demo] {$label} — In Progress",
-            stageType: $stageType,
-            teams: $teams->slice(4)->take($participantCount),
-            stageSettings: $options['partial'] ?? [],
-        );
-        $this->playPartialMatches($reportResult, $partial);
-        $this->line("    ✓ {$partial->name} (ID: {$partial->id})");
-
-        // (c) Ready-to-start tournament
-        $this->line("  Creating ready-to-start {$label}...");
-        $ready = $this->createTournament(
-            createCompetition: $createCompetition,
-            addParticipant: $addParticipant,
-            generateBracket: $generateBracket,
-            name: "[Demo] {$label} — Ready",
-            stageType: $stageType,
-            teams: $teams->slice(8)->take($participantCount),
-            stageSettings: $options['ready'] ?? [],
-        );
-        $this->line("    ✓ {$ready->name} (ID: {$ready->id})");
-    }
-
-    /**
-     * Create a tournament competition, add participants, and generate bracket.
-     *
-     * @param  Collection<int, Team>  $teams
-     * @param  array<string, mixed>  $stageSettings
-     */
-    protected function createTournament(
-        CreateCompetitionAction $createCompetition,
-        AddCompetitionParticipantAction $addParticipant,
-        GenerateBracketAction $generateBracket,
         string $name,
         StageType $stageType,
         Collection $teams,
-        array $stageSettings,
-    ): Competition {
+        array $options,
+        string $playState,
+    ): void {
         $competition = $createCompetition->execute(
             name: $name,
             type: CompetitionType::Tournament,
             stageType: $stageType,
-            options: $stageSettings,
+            options: $options,
         );
 
         foreach ($teams->values() as $index => $team) {
@@ -228,8 +297,26 @@ class SeedDemo extends Command
 
         $stage = $competition->stages()->first();
         $generateBracket->execute($stage);
+        $competition = $competition->fresh(['stages']);
 
-        return $competition->fresh(['stages']);
+        $matchTotal = CompetitionMatch::where('competition_stage_id', $stage->id)->count();
+        $stateLabel = match ($playState) {
+            'finished' => 'finished',
+            'partial' => 'in progress',
+            'ready' => 'ready to start',
+        };
+
+        match ($playState) {
+            'finished' => $this->playAllMatches($reportResult, $competition),
+            'partial' => $this->playPartialMatches($reportResult, $competition, $stageType),
+            'ready' => null,
+        };
+
+        $played = CompetitionMatch::where('competition_stage_id', $stage->id)
+            ->where('status', MatchStatus::Finished)
+            ->count();
+
+        $this->line("  {$name} (ID: {$competition->id}) — {$played}/{$matchTotal} matches ({$stateLabel})");
     }
 
     /**
@@ -239,7 +326,7 @@ class SeedDemo extends Command
     {
         $stage = $competition->stages()->first();
         $safety = 0;
-        $maxIterations = 200;
+        $maxIterations = 500;
 
         while ($safety++ < $maxIterations) {
             $match = $this->findNextPlayableMatch($stage->id);
@@ -255,52 +342,107 @@ class SeedDemo extends Command
     }
 
     /**
-     * Play through only the first round of WB matches (and any auto-resolved BYE matches).
+     * Play a portion of the tournament to create an "in progress" state.
+     *
+     * Format-aware: plays different amounts depending on the format type.
      */
-    protected function playPartialMatches(ReportMatchResultAction $reportResult, Competition $competition): void
-    {
+    protected function playPartialMatches(
+        ReportMatchResultAction $reportResult,
+        Competition $competition,
+        StageType $stageType,
+    ): void {
         $stage = $competition->stages()->first();
 
-        // Play round 1 of winner's bracket first
-        $round1Matches = CompetitionMatch::query()
-            ->where('competition_stage_id', $stage->id)
-            ->where('round_number', 1)
+        match ($stageType) {
+            StageType::SingleElimination,
+            StageType::DoubleElimination => $this->playEliminationPartial($reportResult, $stage),
+            StageType::RoundRobin,
+            StageType::GroupStage => $this->playRoundBasedPartial($reportResult, $stage, rounds: 2),
+            StageType::Swiss => $this->playSwissPartial($reportResult, $stage, rounds: 2),
+            default => null,
+        };
+    }
+
+    /**
+     * Play round 1 + some round 2 for elimination formats (including LB).
+     */
+    protected function playEliminationPartial(ReportMatchResultAction $reportResult, CompetitionStage $stage): void
+    {
+        // Play all of round 1
+        $this->playRound($reportResult, $stage->id, 1);
+
+        // Play round 2 matches that became ready
+        $this->playReadyMatchesInRound($reportResult, $stage->id, 2);
+
+        // Play LB round 101 if any are ready (double elimination)
+        $this->playReadyMatchesInRound($reportResult, $stage->id, 101);
+    }
+
+    /**
+     * Play N complete rounds for round-based formats (Round Robin, Group Stage).
+     */
+    protected function playRoundBasedPartial(
+        ReportMatchResultAction $reportResult,
+        CompetitionStage $stage,
+        int $rounds,
+    ): void {
+        for ($round = 1; $round <= $rounds; $round++) {
+            $this->playRound($reportResult, $stage->id, $round);
+        }
+    }
+
+    /**
+     * Play N complete rounds for Swiss (which generates rounds dynamically).
+     */
+    protected function playSwissPartial(
+        ReportMatchResultAction $reportResult,
+        CompetitionStage $stage,
+        int $rounds,
+    ): void {
+        for ($round = 1; $round <= $rounds; $round++) {
+            $pending = CompetitionMatch::query()
+                ->where('competition_stage_id', $stage->id)
+                ->where('round_number', $round)
+                ->where('status', MatchStatus::Pending)
+                ->get();
+
+            foreach ($pending as $match) {
+                if ($match->matchParticipants()->count() === 2) {
+                    $this->resolveMatch($reportResult, $match);
+                }
+            }
+        }
+    }
+
+    /**
+     * Play all pending matches in a specific round that have 2 participants.
+     */
+    protected function playRound(ReportMatchResultAction $reportResult, int $stageId, int $roundNumber): void
+    {
+        $matches = CompetitionMatch::query()
+            ->where('competition_stage_id', $stageId)
+            ->where('round_number', $roundNumber)
             ->where('status', MatchStatus::Pending)
             ->get();
 
-        foreach ($round1Matches as $match) {
+        foreach ($matches as $match) {
             if ($match->matchParticipants()->count() === 2) {
                 $this->resolveMatch($reportResult, $match);
             }
         }
+    }
 
-        // Now play any resultant LB/WB round 2 matches that became playable
+    /**
+     * Play matches in a specific round that became ready (have 2 participants).
+     */
+    protected function playReadyMatchesInRound(ReportMatchResultAction $reportResult, int $stageId, int $roundNumber): void
+    {
         $safety = 0;
 
         while ($safety++ < 50) {
             $match = CompetitionMatch::query()
-                ->where('competition_stage_id', $stage->id)
-                ->where('round_number', '<=', 2)
-                ->where('status', MatchStatus::Pending)
-                ->withCount('matchParticipants')
-                ->get()
-                ->where('match_participants_count', 2)
-                ->first();
-
-            if ($match === null) {
-                break;
-            }
-
-            $this->resolveMatch($reportResult, $match);
-        }
-
-        // Also play LB round 101 if any matches are ready
-        $safety = 0;
-
-        while ($safety++ < 50) {
-            $match = CompetitionMatch::query()
-                ->where('competition_stage_id', $stage->id)
-                ->where('round_number', 101)
+                ->where('competition_stage_id', $stageId)
+                ->where('round_number', $roundNumber)
                 ->where('status', MatchStatus::Pending)
                 ->withCount('matchParticipants')
                 ->get()
@@ -333,22 +475,42 @@ class SeedDemo extends Command
 
     /**
      * Resolve a match with randomised but plausible scores.
+     *
+     * Produces varied results: decisive wins, close games, and occasional draws
+     * for formats that allow them.
      */
     protected function resolveMatch(ReportMatchResultAction $reportResult, CompetitionMatch $match): void
     {
         $stage = $match->stage;
         $bestOf = $stage->settings['best_of'] ?? 1;
-        $winsNeeded = (int) ceil($bestOf / 2);
+        $allowDraws = $stage->settings['allow_draws'] ?? false;
 
-        // Random winner: one side gets winsNeeded, loser gets less
-        $winnerScore = $winsNeeded;
-        $loserScore = rand(0, $winsNeeded - 1);
-
-        // Randomly assign which slot wins
-        if (rand(0, 1) === 0) {
-            $scores = [1 => $winnerScore, 2 => $loserScore];
+        if ($bestOf > 1) {
+            $winsNeeded = (int) ceil($bestOf / 2);
+            $winnerScore = $winsNeeded;
+            $loserScore = rand(0, $winsNeeded - 1);
         } else {
-            $scores = [1 => $loserScore, 2 => $winnerScore];
+            // For best_of=1, generate more varied and realistic scores
+            $winnerScore = rand(1, 5);
+            $loserScore = rand(0, max(0, $winnerScore - 1));
+        }
+
+        // ~20% chance of a draw in formats that allow it
+        if ($allowDraws && rand(1, 5) === 1) {
+            $drawScore = rand(0, 3);
+            $scores = [1 => $drawScore, 2 => $drawScore];
+        } else {
+            // Randomly assign which slot wins
+            if (rand(0, 1) === 0) {
+                $scores = [1 => $winnerScore, 2 => $loserScore];
+            } else {
+                $scores = [1 => $loserScore, 2 => $winnerScore];
+            }
+
+            // Safety: ensure no accidental ties for non-draw formats
+            if (! $allowDraws && $scores[1] === $scores[2]) {
+                $scores[1]++;
+            }
         }
 
         $reportResult->execute($match, $scores);

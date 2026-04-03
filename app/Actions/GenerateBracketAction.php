@@ -52,6 +52,9 @@ class GenerateBracketAction
         return match ($stage->stage_type->value) {
             'single_elimination' => 2,
             'double_elimination' => 3,
+            'round_robin' => 2,
+            'swiss' => 4,
+            'group_stage' => 4,
             default => 2,
         };
     }

@@ -46,4 +46,25 @@ class CompetitionStageFactory extends Factory
             'stage_type' => StageType::GroupStage,
         ]);
     }
+
+    public function roundRobin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'stage_type' => StageType::RoundRobin,
+        ]);
+    }
+
+    public function swiss(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'stage_type' => StageType::Swiss,
+        ]);
+    }
+
+    public function doubleElimination(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'stage_type' => StageType::DoubleElimination,
+        ]);
+    }
 }
