@@ -21,6 +21,7 @@ services:
             - '.:/var/www/html'
         networks:
             - sail
+            - infrastructure
         depends_on:
             - pgsql
             - redis
@@ -64,16 +65,11 @@ services:
                 - ping
             retries: 3
             timeout: 5s
-    mailpit:
-        image: axllent/mailpit
-        restart: unless-stopped
-        ports:
-          - '8022:8025'
-        networks:
-          - sail
 networks:
     sail:
         driver: bridge
+    infrastructure:
+        external: true
 volumes:
     sail-pgsql:
         driver: local
