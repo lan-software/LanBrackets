@@ -10,7 +10,11 @@
         "format:check": "prettier --check resources/",
         "lint": "eslint . --fix",
         "lint:check": "eslint .",
-        "types:check": "vue-tsc --noEmit"
+        "types:check": "vue-tsc --noEmit",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "test:coverage": "vitest run --coverage",
+        "test:e2e": "playwright test"
     },
     "devDependencies": {
         "@eslint/js": "^9.19.0",
@@ -26,7 +30,13 @@
         "prettier": "^3.4.2",
         "prettier-plugin-tailwindcss": "^0.6.11",
         "typescript-eslint": "^8.23.0",
-        "vue-tsc": "^2.2.4"
+        "vue-tsc": "^2.2.4",
+        "vitest": "^4.1.0",
+        "@vitest/coverage-v8": "^4.1.0",
+        "@vue/test-utils": "^2.4.6",
+        "jsdom": "^26.1.0",
+        "@playwright/test": "^1.52.0",
+        "wait-on": "^8.0.3"
     },
     "dependencies": {
         "@inertiajs/vue3": "^2.3.7",
