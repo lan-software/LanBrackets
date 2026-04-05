@@ -1,7 +1,10 @@
 <?php
 
+use App\Enums\UserRole;
 use App\Models\Competition;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 
 uses(RefreshDatabase::class);
 
@@ -27,6 +30,7 @@ function validPayload(array $overrides = []): array
     return array_merge([
         'user_id' => 1,
         'name' => 'Test Admin',
+        'email' => 'admin@lancore.test',
         'role' => 'admin',
         'exp' => time() + 300,
     ], $overrides);
@@ -40,23 +44,50 @@ it('authenticates with valid signed URL', function () {
     $this->get(signedAuthUrl(validPayload()))
         ->assertRedirect('/');
 
+    $this->assertAuthenticated();
+
     $this->get('/')->assertSuccessful();
 });
 
-it('stores user in session after callback', function () {
+it('creates or updates an external user after callback', function () {
     config(['services.lancore.auth_secret' => 'test-secret-key']);
 
     $this->get(signedAuthUrl(validPayload(['name' => 'Jane Admin', 'role' => 'superadmin'])));
 
-    $this->get('/')
-        ->assertSuccessful();
+    $user = User::query()->where('external_provider', 'lancore')->where('external_id', '1')->first();
 
-    expect(session('lancore_user'))->toMatchArray([
-        'user_id' => 1,
-        'name' => 'Jane Admin',
-        'role' => 'superadmin',
-        'external' => true,
+    expect($user)->not->toBeNull()
+        ->and($user?->name)->toBe('Jane Admin')
+        ->and($user?->email)->toBe('admin@lancore.test')
+        ->and($user?->role)->toBe(UserRole::Superadmin)
+        ->and($user?->external)->toBeTrue();
+});
+
+it('authenticates through LanCore SSO code exchange', function () {
+    config([
+        'lancore.enabled' => true,
+        'lancore.base_url' => 'http://lancore.test',
+        'lancore.internal_url' => null,
+        'lancore.token' => 'lci_test_token',
+        'lancore.app_slug' => 'lanbrackets',
     ]);
+
+    Http::fake([
+        '*/api/integration/sso/exchange' => Http::response([
+            'data' => [
+                'id' => 42,
+                'username' => 'Bracket Admin',
+                'email' => 'bracket-admin@example.com',
+                'roles' => ['admin'],
+            ],
+        ]),
+    ]);
+
+    $this->get('/auth/callback?code='.str_repeat('a', 64))
+        ->assertRedirect('/');
+
+    $this->assertAuthenticated();
+    expect(auth()->user()?->email)->toBe('bracket-admin@example.com');
 });
 
 it('redirects to custom path after callback', function () {
@@ -82,11 +113,13 @@ it('rejects expired token', function () {
         ->assertForbidden();
 });
 
-it('rejects insufficient role', function () {
+it('authenticates regular LanCore users with the signed callback', function () {
     config(['services.lancore.auth_secret' => 'test-secret-key']);
 
     $this->get(signedAuthUrl(validPayload(['role' => 'user'])))
-        ->assertForbidden();
+        ->assertRedirect('/');
+
+    $this->assertAuthenticated();
 });
 
 it('accepts moderator role', function () {
@@ -105,16 +138,18 @@ it('rejects missing parameters', function () {
 
 it('blocks unauthenticated access to web UI', function () {
     $this->withoutVite();
+    config(['lancore.enabled' => true]);
 
     $this->get('/competitions')
-        ->assertForbidden();
+        ->assertRedirect(route('auth.redirect'));
 });
 
 it('blocks unauthenticated access to home page', function () {
     $this->withoutVite();
+    config(['lancore.enabled' => true]);
 
     $this->get('/')
-        ->assertForbidden();
+        ->assertRedirect(route('auth.redirect'));
 });
 
 it('allows authenticated access to web UI', function () {
@@ -124,6 +159,15 @@ it('allows authenticated access to web UI', function () {
 
     $this->get('/competitions')
         ->assertSuccessful();
+});
+
+it('keeps competition management restricted for regular LanCore users', function () {
+    config(['services.lancore.auth_secret' => 'test-secret-key']);
+
+    $this->get(signedAuthUrl(validPayload(['role' => 'user'])));
+
+    $this->get('/competitions')
+        ->assertForbidden();
 });
 
 // ─── Overlay remains open ───
@@ -145,12 +189,11 @@ it('clears session on logout', function () {
     config(['services.lancore.auth_secret' => 'test-secret-key']);
 
     $this->get(signedAuthUrl(validPayload()));
-    expect(session('lancore_user'))->not->toBeNull();
+    $this->assertAuthenticated();
 
-    $this->get('/auth/logout')
-        ->assertRedirect('/');
+    $this->post('/auth/logout')
+        ->assertRedirect(route('login'));
 
-    // After logout, home should be blocked
     $this->get('/')
-        ->assertForbidden();
+        ->assertRedirect(route('login'));
 });

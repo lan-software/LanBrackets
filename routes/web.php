@@ -3,16 +3,24 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CompetitionController;
 use App\Http\Controllers\OverlayController;
-use App\Http\Middleware\AuthenticateLanCoreUser;
+use App\Http\Controllers\SessionController;
 use Illuminate\Support\Facades\Route;
 
-// Auth (public)
-Route::get('/auth/callback', [AuthController::class, 'callback'])->name('auth.callback');
-Route::get('/auth/logout', [AuthController::class, 'logout'])->name('auth.logout');
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [SessionController::class, 'create'])->name('login');
+    Route::post('/login', [SessionController::class, 'store'])->name('login.store');
+});
 
-// Protected web UI
-Route::middleware(AuthenticateLanCoreUser::class)->group(function () {
+Route::get('/auth/redirect', [AuthController::class, 'redirect'])->name('auth.redirect');
+Route::get('/auth/callback', [AuthController::class, 'callback'])->name('auth.callback');
+Route::post('/logout', [SessionController::class, 'destroy'])->name('logout');
+Route::post('/auth/logout', [AuthController::class, 'logout'])->name('auth.logout');
+
+Route::middleware('auth')->group(function () {
     Route::inertia('/', 'Welcome')->name('home');
+});
+
+Route::middleware(['auth', 'role:moderator,admin,superadmin'])->group(function () {
     Route::get('/competitions', [CompetitionController::class, 'index'])->name('competitions.index');
     Route::get('/competitions/{competition}', [CompetitionController::class, 'show'])->name('competitions.show');
 });

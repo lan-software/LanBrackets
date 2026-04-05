@@ -2,14 +2,69 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\UserRole;
+use App\Models\User;
+use App\Services\LanCoreClient;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use RuntimeException;
 
 class AuthController extends Controller
 {
-    private const ALLOWED_ROLES = ['moderator', 'admin', 'superadmin'];
+    public function __construct(private readonly LanCoreClient $client) {}
+
+    public function redirect(): RedirectResponse
+    {
+        try {
+            return redirect()->away($this->client->ssoAuthorizeUrl());
+        } catch (RuntimeException) {
+            return redirect()->route('login', ['local' => 1]);
+        }
+    }
 
     public function callback(Request $request): RedirectResponse
+    {
+        if ($request->filled('code')) {
+            return $this->handleSsoCallback($request);
+        }
+
+        return $this->handleSignedCallback($request);
+    }
+
+    private function handleSsoCallback(Request $request): RedirectResponse
+    {
+        $code = $request->string('code')->toString();
+
+        if (strlen($code) !== 64) {
+            return redirect()->route('login')->with('error', 'Invalid SSO callback. Please try again.');
+        }
+
+        try {
+            $lanCoreUser = $this->client->exchangeCode($code);
+            $role = $this->resolveRoleFromLanCore($lanCoreUser['roles']);
+
+            $user = $this->upsertLanCoreUser(
+                (string) $lanCoreUser['id'],
+                $lanCoreUser['username'],
+                $lanCoreUser['email'],
+                $role,
+            );
+        } catch (RuntimeException $e) {
+            return redirect()->route('login')->with('error', $e->getCode() === 400
+                ? 'The login link has expired. Please try again.'
+                : 'Could not connect to authentication service. Please try again later.');
+        }
+
+        Auth::login($user);
+        $request->session()->regenerate();
+
+        return redirect()->intended(route('home'));
+    }
+
+    private function handleSignedCallback(Request $request): RedirectResponse
     {
         $payload = $request->query('payload');
         $signature = $request->query('signature');
@@ -32,27 +87,99 @@ class AuthController extends Controller
         );
 
         abort_unless(
-            isset($decoded['role']) && in_array($decoded['role'], self::ALLOWED_ROLES, true),
+            isset($decoded['role']) || isset($decoded['roles']),
             403,
-            'Insufficient permissions. Required role: moderator, admin, or superadmin.',
+            'Missing role information.',
         );
 
-        $request->session()->put('lancore_user', [
-            'user_id' => $decoded['user_id'] ?? null,
-            'name' => $decoded['name'] ?? 'Unknown',
-            'role' => $decoded['role'],
-            'external' => true,
-        ]);
+        $roles = is_array($decoded['roles'] ?? null)
+            ? array_values(array_filter($decoded['roles'], 'is_string'))
+            : [];
+
+        $role = isset($decoded['role']) && is_string($decoded['role'])
+            ? UserRole::tryFrom($decoded['role']) ?? UserRole::User
+            : $this->resolveRoleFromLanCore($roles);
+
+        $externalId = isset($decoded['user_id']) ? (string) $decoded['user_id'] : null;
+        $email = isset($decoded['email']) && is_string($decoded['email'])
+            ? strtolower($decoded['email'])
+            : ($externalId !== null ? "lancore-user-{$externalId}@users.lancore.local" : null);
+
+        abort_unless($email !== null, 403, 'Invalid payload.');
+
+        $user = $this->upsertLanCoreUser(
+            $externalId,
+            $decoded['name'] ?? 'Unknown',
+            $email,
+            $role,
+        );
+
+        Auth::login($user);
+        $request->session()->regenerate();
 
         $redirect = $request->query('redirect', '/');
 
         return redirect()->to($redirect);
     }
 
+    /**
+     * @param  array<int, string>  $roles
+     */
+    private function resolveRoleFromLanCore(array $roles): UserRole
+    {
+        return collect($roles)
+            ->map(fn (string $role) => UserRole::tryFrom($role))
+            ->filter()
+            ->sortByDesc(fn (UserRole $role) => match ($role) {
+                UserRole::Superadmin => 4,
+                UserRole::Admin => 3,
+                UserRole::Moderator => 2,
+                UserRole::User => 1,
+            })
+            ->first() ?? UserRole::User;
+    }
+
+    private function upsertLanCoreUser(?string $externalId, string $name, ?string $email, UserRole $role): User
+    {
+        $email ??= $externalId !== null ? "lancore-user-{$externalId}@users.lancore.local" : null;
+
+        abort_unless($email !== null, 403, 'Invalid payload.');
+
+        $user = null;
+
+        if ($externalId !== null) {
+            $user = User::query()
+                ->where('external_provider', 'lancore')
+                ->where('external_id', $externalId)
+                ->first();
+        }
+
+        if ($user === null) {
+            $user = User::query()->where('email', $email)->first();
+        }
+
+        $user ??= new User;
+
+        $user->forceFill([
+            'name' => $name,
+            'email' => $email,
+            'email_verified_at' => now(),
+            'role' => $role,
+            'external' => true,
+            'external_provider' => 'lancore',
+            'external_id' => $externalId,
+            'password' => $user->exists ? $user->getAuthPassword() : Hash::make(Str::random(40)),
+        ])->save();
+
+        return $user;
+    }
+
     public function logout(Request $request): RedirectResponse
     {
-        $request->session()->forget('lancore_user');
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
-        return redirect()->route('home');
+        return redirect()->route('login');
     }
 }
