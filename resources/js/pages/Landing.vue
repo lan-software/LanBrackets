@@ -42,12 +42,12 @@ import { Head, Link } from '@inertiajs/vue3';
                     >
                         Sign in to manage
                     </Link>
-                    <Link
+                    <a
                         href="/auth/redirect"
                         class="rounded-2xl border border-white/15 px-7 py-3 text-sm font-medium text-stone-200 transition hover:border-white/30 hover:text-white"
                     >
                         Login via LanCore
-                    </Link>
+                    </a>
                 </div>
 
                 <div class="mt-20 grid max-w-4xl gap-4 sm:grid-cols-3">

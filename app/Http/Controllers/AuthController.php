@@ -10,16 +10,17 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
 use RuntimeException;
 
 class AuthController extends Controller
 {
     public function __construct(private readonly LanCoreClient $client) {}
 
-    public function redirect(): RedirectResponse
+    public function redirect(): \Symfony\Component\HttpFoundation\Response
     {
         try {
-            return redirect()->away($this->client->ssoAuthorizeUrl());
+            return Inertia::location($this->client->ssoAuthorizeUrl());
         } catch (RuntimeException) {
             return redirect()->route('login', ['local' => 1]);
         }
