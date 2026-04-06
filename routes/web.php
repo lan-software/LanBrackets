@@ -19,11 +19,15 @@ Route::post('/auth/logout', [AuthController::class, 'logout'])->name('auth.logou
 
 Route::get('/', function () {
     if (auth()->check()) {
-        return Inertia::render('Welcome');
+        return redirect()->route('dashboard');
     }
 
     return Inertia::render('Landing');
 })->name('home');
+
+Route::middleware('auth')->group(function () {
+    Route::inertia('/dashboard', 'Dashboard')->name('dashboard');
+});
 
 Route::middleware(['auth', 'role:moderator,admin,superadmin'])->group(function () {
     Route::get('/competitions', [CompetitionController::class, 'index'])->name('competitions.index');

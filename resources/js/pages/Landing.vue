@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
+
+const page = usePage();
+const user = computed(() => (page.props.auth as any)?.user);
 </script>
 
 <template>
@@ -15,12 +19,22 @@ import { Head, Link } from '@inertiajs/vue3';
                 </div>
                 <span class="text-lg font-semibold tracking-tight text-white">LanBrackets</span>
             </div>
-            <Link
-                href="/login"
-                class="rounded-full border border-white/15 px-5 py-2 text-sm font-medium text-stone-200 transition hover:border-amber-300/50 hover:text-white"
-            >
-                Sign in
-            </Link>
+            <div class="flex items-center gap-3">
+                <Link
+                    v-if="user"
+                    href="/dashboard"
+                    class="rounded-full bg-amber-300 px-5 py-2 text-sm font-semibold text-stone-950 transition hover:bg-amber-200"
+                >
+                    Dashboard
+                </Link>
+                <Link
+                    v-else
+                    href="/login"
+                    class="rounded-full border border-white/15 px-5 py-2 text-sm font-medium text-stone-200 transition hover:border-amber-300/50 hover:text-white"
+                >
+                    Sign in
+                </Link>
+            </div>
         </header>
 
         <main class="relative z-10 mx-auto max-w-6xl px-6">
