@@ -5,6 +5,7 @@ use App\Http\Controllers\CompetitionController;
 use App\Http\Controllers\OverlayController;
 use App\Http\Controllers\SessionController;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [SessionController::class, 'create'])->name('login');
@@ -16,8 +17,16 @@ Route::get('/auth/callback', [AuthController::class, 'callback'])->name('auth.ca
 Route::post('/logout', [SessionController::class, 'destroy'])->name('logout');
 Route::post('/auth/logout', [AuthController::class, 'logout'])->name('auth.logout');
 
+Route::get('/', function () {
+    if (auth()->check()) {
+        return redirect()->route('competitions.index');
+    }
+
+    return Inertia::render('Landing');
+})->name('home');
+
 Route::middleware('auth')->group(function () {
-    Route::inertia('/', 'Welcome')->name('home');
+    Route::inertia('/welcome', 'Welcome')->name('welcome');
 });
 
 Route::middleware(['auth', 'role:moderator,admin,superadmin'])->group(function () {
