@@ -46,6 +46,11 @@ jobs:
       - name: Copy Environment File
         run: cp .env.example .env
 
+      - name: Use SQLite for CI
+        run: |
+          sed -i 's/^DB_CONNECTION=.*/DB_CONNECTION=sqlite/' .env
+          sed -i 's/^DB_HOST=.*/DB_HOST=127.0.0.1/' .env
+
       - name: Generate Application Key
         run: php artisan key:generate
 
