@@ -30,7 +30,11 @@ const mainNavItems = computed((): NavItem[] => {
         { title: 'Dashboard', href: dashboard(), icon: LayoutGrid },
     ];
     if (canManageBrackets.value) {
-        items.push({ title: 'Competitions', href: competitionsIndex(), icon: Trophy });
+        items.push({
+            title: 'Competitions',
+            href: competitionsIndex(),
+            icon: Trophy,
+        });
     }
     return items;
 });

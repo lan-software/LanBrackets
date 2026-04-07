@@ -23,7 +23,9 @@ const page = usePage<{
 }>();
 
 const user = computed(() => page.props.auth.user);
-const canManageBrackets = computed(() => ['moderator', 'admin', 'superadmin'].includes(user.value?.role ?? ''));
+const canManageBrackets = computed(() =>
+    ['moderator', 'admin', 'superadmin'].includes(user.value?.role ?? ''),
+);
 </script>
 
 <template>
@@ -32,37 +34,54 @@ const canManageBrackets = computed(() => ['moderator', 'admin', 'superadmin'].in
     <div class="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
         <div>
             <h1 class="text-2xl font-bold">Welcome back, {{ user?.name }}.</h1>
-            <p class="mt-1 text-sm text-muted-foreground">Manage your tournament brackets and competitions.</p>
+            <p class="mt-1 text-sm text-muted-foreground">
+                Manage your tournament brackets and competitions.
+            </p>
         </div>
 
         <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             <!-- User info -->
             <div class="rounded-xl border border-border bg-card p-6">
-                <h2 class="mb-4 text-sm font-semibold text-muted-foreground">Your Account</h2>
+                <h2 class="mb-4 text-sm font-semibold text-muted-foreground">
+                    Your Account
+                </h2>
                 <dl class="space-y-3">
                     <div>
                         <dt class="text-xs text-muted-foreground">Email</dt>
-                        <dd class="mt-0.5 text-sm font-medium">{{ user?.email }}</dd>
+                        <dd class="mt-0.5 text-sm font-medium">
+                            {{ user?.email }}
+                        </dd>
                     </div>
                     <div>
                         <dt class="text-xs text-muted-foreground">Role</dt>
-                        <dd class="mt-0.5 text-sm font-medium capitalize">{{ user?.role }}</dd>
+                        <dd class="mt-0.5 text-sm font-medium capitalize">
+                            {{ user?.role }}
+                        </dd>
                     </div>
                     <div>
                         <dt class="text-xs text-muted-foreground">Provider</dt>
-                        <dd class="mt-0.5 text-sm font-medium">{{ user?.external ? 'LanCore SSO' : 'Local' }}</dd>
+                        <dd class="mt-0.5 text-sm font-medium">
+                            {{ user?.external ? 'LanCore SSO' : 'Local' }}
+                        </dd>
                     </div>
                 </dl>
             </div>
 
             <!-- Competitions -->
             <div class="rounded-xl border border-border bg-card p-6">
-                <h2 class="mb-4 text-sm font-semibold text-muted-foreground">Competitions</h2>
-                <p v-if="canManageBrackets" class="text-sm leading-relaxed text-muted-foreground">
-                    Your role grants access to competition management. Create brackets, report results, and manage standings.
+                <h2 class="mb-4 text-sm font-semibold text-muted-foreground">
+                    Competitions
+                </h2>
+                <p
+                    v-if="canManageBrackets"
+                    class="text-sm leading-relaxed text-muted-foreground"
+                >
+                    Your role grants access to competition management. Create
+                    brackets, report results, and manage standings.
                 </p>
                 <p v-else class="text-sm leading-relaxed text-muted-foreground">
-                    Competition management is restricted to moderator, admin, and superadmin roles.
+                    Competition management is restricted to moderator, admin,
+                    and superadmin roles.
                 </p>
                 <div class="mt-5">
                     <Link
@@ -78,7 +97,9 @@ const canManageBrackets = computed(() => ['moderator', 'admin', 'superadmin'].in
 
             <!-- Quick actions -->
             <div class="rounded-xl border border-border bg-card p-6">
-                <h2 class="mb-4 text-sm font-semibold text-muted-foreground">Quick Actions</h2>
+                <h2 class="mb-4 text-sm font-semibold text-muted-foreground">
+                    Quick Actions
+                </h2>
                 <div class="space-y-3">
                     <a
                         href="/auth/redirect"

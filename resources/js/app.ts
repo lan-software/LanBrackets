@@ -17,7 +17,10 @@ createInertiaApp({
         );
 
         // Apply sidebar layout to authenticated pages (not Landing, Login, Overlay)
-        if (!['Landing', 'Auth/Login', 'Auth/Unauthenticated'].includes(name) && !name.startsWith('Overlay/')) {
+        if (
+            !['Landing', 'Auth/Login', 'Auth/Unauthenticated'].includes(name) &&
+            !name.startsWith('Overlay/')
+        ) {
             page.default.layout = page.default.layout || AppLayout;
         }
 
