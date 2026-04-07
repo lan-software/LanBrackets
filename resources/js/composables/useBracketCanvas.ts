@@ -2,10 +2,11 @@ import {
     ref,
     computed,
     onMounted,
-    onUnmounted,
-    type Ref,
-    type ComputedRef,
+    onUnmounted
+    
+    
 } from 'vue';
+import type {Ref, ComputedRef} from 'vue';
 
 // ─── Types ───
 
@@ -76,13 +77,19 @@ const COLORS = {
 
 function groupByRound(matches: BracketMatch[]): Record<number, BracketMatch[]> {
     const groups: Record<number, BracketMatch[]> = {};
+
     for (const m of matches) {
-        if (!groups[m.round_number]) groups[m.round_number] = [];
+        if (!groups[m.round_number]) {
+groups[m.round_number] = [];
+}
+
         groups[m.round_number].push(m);
     }
+
     for (const key of Object.keys(groups)) {
         groups[Number(key)].sort((a, b) => a.sequence - b.sequence);
     }
+
     return groups;
 }
 
@@ -204,13 +211,16 @@ function layoutDoubleElimination(matches: BracketMatch[]): LayoutMatch[] {
 // ─── Placement Detection ───
 
 function getPlacement(match: BracketMatch, stage: Stage): number | null {
-    if (match.status !== 'finished' || !match.winner_participant_id)
-        return null;
+    if (match.status !== 'finished' || !match.winner_participant_id) {
+return null;
+}
 
     const isDE = stage.stage_type === 'double_elimination';
     const isSE = stage.stage_type === 'single_elimination';
 
-    if (isDE && match.bracket_side === 'grand_final') return 1;
+    if (isDE && match.bracket_side === 'grand_final') {
+return 1;
+}
 
     if (isSE) {
         const rounds = groupByRound(stage.matches);
@@ -218,19 +228,26 @@ function getPlacement(match: BracketMatch, stage: Stage): number | null {
             .map(Number)
             .sort((a, b) => a - b);
         const lastRound = roundNumbers[roundNumbers.length - 1];
-        if (match.round_number === lastRound) return 1;
+
+        if (match.round_number === lastRound) {
+return 1;
+}
     }
 
     return null;
 }
 
 function getLoserPlacement(match: BracketMatch, stage: Stage): number | null {
-    if (match.status !== 'finished') return null;
+    if (match.status !== 'finished') {
+return null;
+}
 
     const isDE = stage.stage_type === 'double_elimination';
     const isSE = stage.stage_type === 'single_elimination';
 
-    if (isDE && match.bracket_side === 'grand_final') return 2;
+    if (isDE && match.bracket_side === 'grand_final') {
+return 2;
+}
 
     if (isDE && match.bracket_side === 'losers') {
         const lbMatches = stage.matches.filter(
@@ -240,7 +257,10 @@ function getLoserPlacement(match: BracketMatch, stage: Stage): number | null {
             ...new Set(lbMatches.map((m) => m.round_number)),
         ].sort((a, b) => a - b);
         const lastLBRound = lbRounds[lbRounds.length - 1];
-        if (match.round_number === lastLBRound) return 3;
+
+        if (match.round_number === lastLBRound) {
+return 3;
+}
     }
 
     if (isSE) {
@@ -249,9 +269,16 @@ function getLoserPlacement(match: BracketMatch, stage: Stage): number | null {
             .map(Number)
             .sort((a, b) => a - b);
         const lastRound = roundNumbers[roundNumbers.length - 1];
-        if (match.round_number === lastRound) return 2;
+
+        if (match.round_number === lastRound) {
+return 2;
+}
+
         const semiRound = roundNumbers[roundNumbers.length - 2];
-        if (semiRound && match.round_number === semiRound) return 3;
+
+        if (semiRound && match.round_number === semiRound) {
+return 3;
+}
     }
 
     return null;
@@ -286,21 +313,32 @@ function truncate(text: string, maxLen: number): string {
 
 function drawConnections(ctx: CanvasRenderingContext2D, layout: LayoutMatch[]) {
     const sections = new Map<string, LayoutMatch[]>();
+
     for (const item of layout) {
         const key = item.section;
-        if (!sections.has(key)) sections.set(key, []);
+
+        if (!sections.has(key)) {
+sections.set(key, []);
+}
+
         sections.get(key)!.push(item);
     }
 
     for (const [, items] of sections) {
         const rounds = new Map<number, LayoutMatch[]>();
+
         for (const item of items) {
             const r = item.match.round_number;
-            if (!rounds.has(r)) rounds.set(r, []);
+
+            if (!rounds.has(r)) {
+rounds.set(r, []);
+}
+
             rounds.get(r)!.push(item);
         }
 
         const roundNums = [...rounds.keys()].sort((a, b) => a - b);
+
         for (let ri = 0; ri < roundNums.length - 1; ri++) {
             const current = rounds.get(roundNums[ri])!;
             const next = rounds.get(roundNums[ri + 1])!;
@@ -310,7 +348,10 @@ function drawConnections(ctx: CanvasRenderingContext2D, layout: LayoutMatch[]) {
                     i / Math.max(1, Math.ceil(current.length / next.length)),
                 );
                 const target = next[Math.min(targetIdx, next.length - 1)];
-                if (!target) continue;
+
+                if (!target) {
+continue;
+}
 
                 const fromX = current[i].x + MATCH_WIDTH;
                 const fromY = current[i].y + MATCH_HEIGHT / 2;
@@ -440,9 +481,12 @@ function drawSectionLabels(
     layout: LayoutMatch[],
 ) {
     const sections: Record<string, { minY: number }> = {};
+
     for (const item of layout) {
-        if (!sections[item.section])
-            sections[item.section] = { minY: Infinity };
+        if (!sections[item.section]) {
+sections[item.section] = { minY: Infinity };
+}
+
         sections[item.section].minY = Math.min(
             sections[item.section].minY,
             item.y,
@@ -494,18 +538,26 @@ export function useBracketCanvas(options: UseBracketCanvasOptions) {
     let pulsePhase = 0;
 
     function computeLayout(): LayoutMatch[] {
-        if (!activeStage.value) return [];
+        if (!activeStage.value) {
+return [];
+}
 
         const matches = activeStage.value.matches;
         const isDE = activeStage.value.stage_type === 'double_elimination';
 
-        if (isDE) return layoutDoubleElimination(matches);
+        if (isDE) {
+return layoutDoubleElimination(matches);
+}
+
         return layoutSingleElimination(matches);
     }
 
     function draw() {
         const ctx = canvas.value?.getContext('2d');
-        if (!ctx || !canvas.value) return;
+
+        if (!ctx || !canvas.value) {
+return;
+}
 
         const dpr = window.devicePixelRatio || 1;
         const w = canvas.value.clientWidth;
@@ -526,6 +578,7 @@ export function useBracketCanvas(options: UseBracketCanvasOptions) {
         drawConnections(ctx, layoutItems);
 
         pulsePhase += 0.03;
+
         for (const item of layoutItems) {
             drawMatch(ctx, item, activeStage.value!, pulsePhase);
         }
@@ -550,7 +603,10 @@ export function useBracketCanvas(options: UseBracketCanvasOptions) {
     }
 
     function onMouseMove(e: MouseEvent) {
-        if (!isDragging.value) return;
+        if (!isDragging.value) {
+return;
+}
+
         offsetX.value = dragOffsetX.value + (e.clientX - dragStartX.value);
         offsetY.value = dragOffsetY.value + (e.clientY - dragStartY.value);
     }
@@ -594,6 +650,7 @@ export function useBracketCanvas(options: UseBracketCanvasOptions) {
 
     function onTouchMove(e: TouchEvent) {
         e.preventDefault();
+
         if (e.touches.length === 1 && isDragging.value) {
             offsetX.value =
                 dragOffsetX.value + (e.touches[0].clientX - dragStartX.value);
@@ -630,9 +687,15 @@ export function useBracketCanvas(options: UseBracketCanvasOptions) {
     }
 
     function fitToScreen() {
-        if (!canvas.value) return;
+        if (!canvas.value) {
+return;
+}
+
         const layout = computeLayout();
-        if (layout.length === 0) return;
+
+        if (layout.length === 0) {
+return;
+}
 
         const minX = Math.min(...layout.map((l) => l.x));
         const maxX = Math.max(...layout.map((l) => l.x + MATCH_WIDTH));
@@ -654,8 +717,12 @@ export function useBracketCanvas(options: UseBracketCanvasOptions) {
     // ─── Stats ───
 
     const stats = computed(() => {
-        if (!activeStage.value) return { total: 0, finished: 0, ready: 0 };
+        if (!activeStage.value) {
+return { total: 0, finished: 0, ready: 0 };
+}
+
         const matches = activeStage.value.matches;
+
         return {
             total: matches.length,
             finished: matches.filter((m) => m.status === 'finished').length,

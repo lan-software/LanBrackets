@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { useBracketCanvas, type Stage } from '@/composables/useBracketCanvas';
+import { useBracketCanvas  } from '@/composables/useBracketCanvas';
+import type {Stage} from '@/composables/useBracketCanvas';
 
 interface Competition {
     id: number;
@@ -23,8 +24,10 @@ const stagesRef = computed(() => stagesData.value);
 // Parse query params for stage selection and background
 const urlParams = new URLSearchParams(window.location.search);
 const stageParam = urlParams.get('stage');
+
 if (stageParam !== null) {
     const idx = parseInt(stageParam, 10);
+
     if (!isNaN(idx) && idx >= 0 && idx < props.stages.length) {
         activeStageIndex.value = idx;
     }
@@ -61,7 +64,10 @@ async function pollData() {
         const response = await fetch(
             `/api/v1/overlay/competitions/${props.competition.id}?token=${encodeURIComponent(props.token)}`,
         );
-        if (!response.ok) return;
+
+        if (!response.ok) {
+return;
+}
 
         const data = await response.json();
         stagesData.value = data.stages;
@@ -75,7 +81,9 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-    if (pollInterval) clearInterval(pollInterval);
+    if (pollInterval) {
+clearInterval(pollInterval);
+}
 });
 </script>
 

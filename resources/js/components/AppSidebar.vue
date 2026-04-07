@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
 import { LayoutGrid, Trophy } from 'lucide-vue-next';
+import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -29,6 +29,7 @@ const mainNavItems = computed((): NavItem[] => {
     const items: NavItem[] = [
         { title: 'Dashboard', href: dashboard(), icon: LayoutGrid },
     ];
+
     if (canManageBrackets.value) {
         items.push({
             title: 'Competitions',
@@ -36,6 +37,7 @@ const mainNavItems = computed((): NavItem[] => {
             icon: Trophy,
         });
     }
+
     return items;
 });
 
