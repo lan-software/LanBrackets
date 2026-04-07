@@ -41,7 +41,6 @@ const {
     canvas,
     activeStage,
     isDragging,
-    fitToScreen,
     onMouseDown,
     onMouseMove,
     onMouseUp,
