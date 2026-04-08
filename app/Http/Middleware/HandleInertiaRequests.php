@@ -50,6 +50,10 @@ class HandleInertiaRequests extends Middleware
                 ],
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'demoBanner' => fn () => config('app.demo') ? [
+                'message' => config('app.demo_banner_message'),
+                'mailpit_url' => config('app.demo_mailpit_url'),
+            ] : null,
         ];
     }
 }
