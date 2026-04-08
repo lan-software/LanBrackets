@@ -69,7 +69,7 @@ RUN npm run build
 # =============================================================================
 # Stage 3: Production image (FrankenPHP + Octane)
 # =============================================================================
-FROM dunglas/frankenphp:php8.3-alpine AS production
+FROM dunglas/frankenphp:php8.5-alpine AS production
 
 LABEL org.opencontainers.image.title="LanBrackets" \
       org.opencontainers.image.description="LanBrackets — Tournament bracket management for LAN events" \
@@ -78,7 +78,7 @@ LABEL org.opencontainers.image.title="LanBrackets" \
       org.opencontainers.image.vendor="Lan-Software.de" \
       org.opencontainers.image.authors="Markus Kohn <post@markus-kohn.de>" \
       org.opencontainers.image.licenses="AGPL-3.0" \
-      org.opencontainers.image.base.name="dunglas/frankenphp:php8.3-alpine"
+      org.opencontainers.image.base.name="dunglas/frankenphp:php8.5-alpine"
 
 RUN apk add --no-cache supervisor curl su-exec
 

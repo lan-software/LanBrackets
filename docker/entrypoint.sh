@@ -44,4 +44,6 @@ case "${ROLE}" in
 esac
 
 log "Exec supervisord with ${CONF}"
-exec su-exec www-data /usr/bin/supervisord -c "${CONF}"
+# supervisord itself must run as root so it can open /dev/stdout and /dev/stderr.
+# All supervised programs are configured with `user=www-data`.
+exec /usr/bin/supervisord -c "${CONF}"
