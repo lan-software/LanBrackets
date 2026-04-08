@@ -115,7 +115,7 @@ COPY --from=frontend /app/public/build /var/www/html/public/build
 RUN mkdir -p storage/framework/sessions storage/framework/views \
              storage/framework/cache storage/logs bootstrap/cache \
              /var/log/supervisor /var/run/supervisor \
- && chown -R www-data:www-data storage bootstrap/cache /var/log/supervisor /var/run/supervisor
+ && chown -R www-data:www-data storage bootstrap/cache public /var/log/supervisor /var/run/supervisor
 
 EXPOSE 80 443
 
