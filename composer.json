@@ -11,7 +11,8 @@
     "repositories": [
         {
             "type": "path",
-            "url": "../lancore-client"
+            "url": "../lancore-client",
+            "options": {"symlink": false}
         }
     ],
     "require": {

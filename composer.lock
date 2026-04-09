@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3fbf83d0baa09a79604cdf6cd71d6780",
+    "content-hash": "21e7de53110a3cca631384066b543c22",
     "packages": [
         {
             "name": "brick/math",
@@ -1229,6 +1229,7 @@
                 "php": "^8.3"
             },
             "require-dev": {
+                "laravel/pint": "^1.29",
                 "orchestra/testbench": "^11.0",
                 "pestphp/pest": "^3.0"
             },
@@ -1255,6 +1256,7 @@
             ],
             "description": "Canonical LanCore Integration API client for Lan* satellite applications",
             "transport-options": {
+                "symlink": false,
                 "relative": true
             }
         },
