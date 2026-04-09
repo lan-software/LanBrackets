@@ -4,14 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Enums\UserRole;
 use App\Models\User;
-use App\Services\LanCoreClient;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
-use RuntimeException;
+use LanSoftware\LanCoreClient\DTOs\LanCoreUser;
+use LanSoftware\LanCoreClient\Exceptions\LanCoreException;
+use LanSoftware\LanCoreClient\Exceptions\LanCoreRequestException;
+use LanSoftware\LanCoreClient\LanCoreClient;
 
 class AuthController extends Controller
 {
@@ -21,7 +23,7 @@ class AuthController extends Controller
     {
         try {
             return Inertia::location($this->client->ssoAuthorizeUrl());
-        } catch (RuntimeException) {
+        } catch (LanCoreException) {
             return redirect()->route('login', ['local' => 1]);
         }
     }
@@ -45,18 +47,15 @@ class AuthController extends Controller
 
         try {
             $lanCoreUser = $this->client->exchangeCode($code);
-            $role = $this->resolveRoleFromLanCore($lanCoreUser['roles']);
+            $role = $this->resolveRoleFromLanCore($lanCoreUser->roles);
 
-            $user = $this->upsertLanCoreUser(
-                (string) $lanCoreUser['id'],
-                $lanCoreUser['username'],
-                $lanCoreUser['email'],
-                $role,
-            );
-        } catch (RuntimeException $e) {
-            return redirect()->route('login')->with('error', $e->getCode() === 400
+            $user = $this->upsertLanCoreUser($lanCoreUser, $role);
+        } catch (LanCoreRequestException $e) {
+            return redirect()->route('login')->with('error', $e->statusCode === 400
                 ? 'The login link has expired. Please try again.'
                 : 'Could not connect to authentication service. Please try again later.');
+        } catch (LanCoreException) {
+            return redirect()->route('login')->with('error', 'Could not connect to authentication service. Please try again later.');
         }
 
         Auth::login($user);
@@ -108,7 +107,7 @@ class AuthController extends Controller
 
         abort_unless($email !== null, 403, 'Invalid payload.');
 
-        $user = $this->upsertLanCoreUser(
+        $user = $this->upsertLanCoreUserFromArray(
             $externalId,
             $decoded['name'] ?? 'Unknown',
             $email,
@@ -140,7 +139,17 @@ class AuthController extends Controller
             ->first() ?? UserRole::User;
     }
 
-    private function upsertLanCoreUser(?string $externalId, string $name, ?string $email, UserRole $role): User
+    private function upsertLanCoreUser(LanCoreUser $lanCoreUser, UserRole $role): User
+    {
+        return $this->upsertLanCoreUserFromArray(
+            (string) $lanCoreUser->id,
+            $lanCoreUser->username,
+            $lanCoreUser->email,
+            $role,
+        );
+    }
+
+    private function upsertLanCoreUserFromArray(?string $externalId, string $name, ?string $email, UserRole $role): User
     {
         $email ??= $externalId !== null ? "lancore-user-{$externalId}@users.lancore.local" : null;
 

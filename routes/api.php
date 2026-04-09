@@ -6,8 +6,8 @@ use App\Http\Controllers\Api\V1\WebhookConfigController;
 use App\Http\Middleware\AuthenticateApiToken;
 use Illuminate\Support\Facades\Route;
 
-Route::post('webhooks/roles', LanCoreRolesWebhookController::class)->name('api.webhooks.roles');
-Route::post('webhook/roles', LanCoreRolesWebhookController::class);
+Route::post('webhooks/roles', LanCoreRolesWebhookController::class)->middleware('lancore.webhook:user.roles_updated')->name('api.webhooks.roles');
+Route::post('webhook/roles', LanCoreRolesWebhookController::class)->middleware('lancore.webhook:user.roles_updated');
 
 Route::prefix('v1')->middleware(AuthenticateApiToken::class)->group(function () {
     Route::get('competitions', [CompetitionApiController::class, 'index']);

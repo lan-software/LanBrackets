@@ -3,43 +3,25 @@
 namespace App\Http\Controllers\Api;
 
 use App\Enums\UserRole;
-use App\Http\Controllers\Controller;
 use App\Models\User;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\Model;
+use LanSoftware\LanCoreClient\Webhooks\Controllers\HandlesLanCoreUserRolesUpdatedWebhook;
+use LanSoftware\LanCoreClient\Webhooks\Payloads\UserRolesUpdatedPayload;
 
-class LanCoreRolesWebhookController extends Controller
+class LanCoreRolesWebhookController extends HandlesLanCoreUserRolesUpdatedWebhook
 {
-    public function __invoke(Request $request): JsonResponse
+    protected function resolveUser(int $lancoreUserId): ?Model
     {
-        $body = $request->getContent();
-        $secret = (string) config('lancore.roles_webhook_secret', '');
-        $signature = $request->header('X-Webhook-Signature');
-
-        if ($secret !== '') {
-            abort_unless(is_string($signature) && str_starts_with($signature, 'sha256='), 403, 'Invalid signature.');
-
-            $expected = 'sha256='.hash_hmac('sha256', $body, $secret);
-            abort_unless(hash_equals($expected, $signature), 403, 'Invalid signature.');
-        }
-
-        abort_unless($request->header('X-Webhook-Event') === 'user.roles_updated', 400, 'Unsupported webhook event.');
-
-        $userId = (string) $request->integer('user.id');
-        $roles = $request->input('user.roles');
-
-        abort_unless($userId !== '0' && is_array($roles), 422, 'Invalid payload.');
-
-        $user = User::query()
+        return User::query()
             ->where('external_provider', 'lancore')
-            ->where('external_id', $userId)
+            ->where('external_id', (string) $lancoreUserId)
             ->first();
+    }
 
-        if ($user === null) {
-            return response()->json(['status' => 'ignored'], 202);
-        }
-
-        $role = collect($roles)
+    protected function syncRoles(Model $user, UserRolesUpdatedPayload $payload): void
+    {
+        /** @var User $user */
+        $role = collect($payload->roles)
             ->map(fn (string $incomingRole) => UserRole::tryFrom($incomingRole))
             ->filter()
             ->sortByDesc(fn (UserRole $mappedRole) => match ($mappedRole) {
@@ -54,7 +36,5 @@ class LanCoreRolesWebhookController extends Controller
             $user->role = $role;
             $user->save();
         }
-
-        return response()->json(['status' => 'ok']);
     }
 }
