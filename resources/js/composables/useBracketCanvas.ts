@@ -1,12 +1,5 @@
-import {
-    ref,
-    computed,
-    onMounted,
-    onUnmounted
-    
-    
-} from 'vue';
-import type {Ref, ComputedRef} from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import type { Ref, ComputedRef } from 'vue';
 
 // ─── Types ───
 
@@ -80,8 +73,8 @@ function groupByRound(matches: BracketMatch[]): Record<number, BracketMatch[]> {
 
     for (const m of matches) {
         if (!groups[m.round_number]) {
-groups[m.round_number] = [];
-}
+            groups[m.round_number] = [];
+        }
 
         groups[m.round_number].push(m);
     }
@@ -212,15 +205,15 @@ function layoutDoubleElimination(matches: BracketMatch[]): LayoutMatch[] {
 
 function getPlacement(match: BracketMatch, stage: Stage): number | null {
     if (match.status !== 'finished' || !match.winner_participant_id) {
-return null;
-}
+        return null;
+    }
 
     const isDE = stage.stage_type === 'double_elimination';
     const isSE = stage.stage_type === 'single_elimination';
 
     if (isDE && match.bracket_side === 'grand_final') {
-return 1;
-}
+        return 1;
+    }
 
     if (isSE) {
         const rounds = groupByRound(stage.matches);
@@ -230,8 +223,8 @@ return 1;
         const lastRound = roundNumbers[roundNumbers.length - 1];
 
         if (match.round_number === lastRound) {
-return 1;
-}
+            return 1;
+        }
     }
 
     return null;
@@ -239,15 +232,15 @@ return 1;
 
 function getLoserPlacement(match: BracketMatch, stage: Stage): number | null {
     if (match.status !== 'finished') {
-return null;
-}
+        return null;
+    }
 
     const isDE = stage.stage_type === 'double_elimination';
     const isSE = stage.stage_type === 'single_elimination';
 
     if (isDE && match.bracket_side === 'grand_final') {
-return 2;
-}
+        return 2;
+    }
 
     if (isDE && match.bracket_side === 'losers') {
         const lbMatches = stage.matches.filter(
@@ -259,8 +252,8 @@ return 2;
         const lastLBRound = lbRounds[lbRounds.length - 1];
 
         if (match.round_number === lastLBRound) {
-return 3;
-}
+            return 3;
+        }
     }
 
     if (isSE) {
@@ -271,14 +264,14 @@ return 3;
         const lastRound = roundNumbers[roundNumbers.length - 1];
 
         if (match.round_number === lastRound) {
-return 2;
-}
+            return 2;
+        }
 
         const semiRound = roundNumbers[roundNumbers.length - 2];
 
         if (semiRound && match.round_number === semiRound) {
-return 3;
-}
+            return 3;
+        }
     }
 
     return null;
@@ -318,8 +311,8 @@ function drawConnections(ctx: CanvasRenderingContext2D, layout: LayoutMatch[]) {
         const key = item.section;
 
         if (!sections.has(key)) {
-sections.set(key, []);
-}
+            sections.set(key, []);
+        }
 
         sections.get(key)!.push(item);
     }
@@ -331,8 +324,8 @@ sections.set(key, []);
             const r = item.match.round_number;
 
             if (!rounds.has(r)) {
-rounds.set(r, []);
-}
+                rounds.set(r, []);
+            }
 
             rounds.get(r)!.push(item);
         }
@@ -350,8 +343,8 @@ rounds.set(r, []);
                 const target = next[Math.min(targetIdx, next.length - 1)];
 
                 if (!target) {
-continue;
-}
+                    continue;
+                }
 
                 const fromX = current[i].x + MATCH_WIDTH;
                 const fromY = current[i].y + MATCH_HEIGHT / 2;
@@ -484,8 +477,8 @@ function drawSectionLabels(
 
     for (const item of layout) {
         if (!sections[item.section]) {
-sections[item.section] = { minY: Infinity };
-}
+            sections[item.section] = { minY: Infinity };
+        }
 
         sections[item.section].minY = Math.min(
             sections[item.section].minY,
@@ -539,15 +532,15 @@ export function useBracketCanvas(options: UseBracketCanvasOptions) {
 
     function computeLayout(): LayoutMatch[] {
         if (!activeStage.value) {
-return [];
-}
+            return [];
+        }
 
         const matches = activeStage.value.matches;
         const isDE = activeStage.value.stage_type === 'double_elimination';
 
         if (isDE) {
-return layoutDoubleElimination(matches);
-}
+            return layoutDoubleElimination(matches);
+        }
 
         return layoutSingleElimination(matches);
     }
@@ -556,8 +549,8 @@ return layoutDoubleElimination(matches);
         const ctx = canvas.value?.getContext('2d');
 
         if (!ctx || !canvas.value) {
-return;
-}
+            return;
+        }
 
         const dpr = window.devicePixelRatio || 1;
         const w = canvas.value.clientWidth;
@@ -604,8 +597,8 @@ return;
 
     function onMouseMove(e: MouseEvent) {
         if (!isDragging.value) {
-return;
-}
+            return;
+        }
 
         offsetX.value = dragOffsetX.value + (e.clientX - dragStartX.value);
         offsetY.value = dragOffsetY.value + (e.clientY - dragStartY.value);
@@ -688,14 +681,14 @@ return;
 
     function fitToScreen() {
         if (!canvas.value) {
-return;
-}
+            return;
+        }
 
         const layout = computeLayout();
 
         if (layout.length === 0) {
-return;
-}
+            return;
+        }
 
         const minX = Math.min(...layout.map((l) => l.x));
         const maxX = Math.max(...layout.map((l) => l.x + MATCH_WIDTH));
@@ -718,8 +711,8 @@ return;
 
     const stats = computed(() => {
         if (!activeStage.value) {
-return { total: 0, finished: 0, ready: 0 };
-}
+            return { total: 0, finished: 0, ready: 0 };
+        }
 
         const matches = activeStage.value.matches;
 

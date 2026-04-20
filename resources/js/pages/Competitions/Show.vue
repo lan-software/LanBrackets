@@ -2,8 +2,8 @@
 import { Head, Link } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 import { index } from '@/actions/App/Http/Controllers/CompetitionController';
-import { useBracketCanvas  } from '@/composables/useBracketCanvas';
-import type {Stage} from '@/composables/useBracketCanvas';
+import { useBracketCanvas } from '@/composables/useBracketCanvas';
+import type { Stage } from '@/composables/useBracketCanvas';
 
 interface Competition {
     id: number;

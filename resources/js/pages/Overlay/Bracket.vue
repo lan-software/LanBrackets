@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { useBracketCanvas  } from '@/composables/useBracketCanvas';
-import type {Stage} from '@/composables/useBracketCanvas';
+import { useBracketCanvas } from '@/composables/useBracketCanvas';
+import type { Stage } from '@/composables/useBracketCanvas';
 
 interface Competition {
     id: number;
@@ -65,8 +65,8 @@ async function pollData() {
         );
 
         if (!response.ok) {
-return;
-}
+            return;
+        }
 
         const data = await response.json();
         stagesData.value = data.stages;
@@ -81,8 +81,8 @@ onMounted(() => {
 
 onUnmounted(() => {
     if (pollInterval) {
-clearInterval(pollInterval);
-}
+        clearInterval(pollInterval);
+    }
 });
 </script>
 
