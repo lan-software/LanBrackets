@@ -20,11 +20,8 @@ beforeEach(function () {
 });
 
 it('syncs LanBrackets roles from the LanCore webhook payload', function () {
-    $user = User::factory()->create([
+    $user = User::factory()->lanCoreUser(42)->create([
         'role' => UserRole::User,
-        'external' => true,
-        'external_provider' => 'lancore',
-        'external_id' => '42',
     ]);
 
     $body = json_encode([

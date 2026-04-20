@@ -2,24 +2,27 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\UserRole;
-use App\Models\User;
+use App\Actions\SyncUserRolesFromLanCore;
+use App\Services\UserSyncService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use Inertia\Inertia;
 use LanSoftware\LanCoreClient\DTOs\LanCoreUser;
 use LanSoftware\LanCoreClient\Exceptions\LanCoreException;
 use LanSoftware\LanCoreClient\Exceptions\LanCoreRequestException;
 use LanSoftware\LanCoreClient\LanCoreClient;
+use Symfony\Component\HttpFoundation\Response;
 
 class AuthController extends Controller
 {
-    public function __construct(private readonly LanCoreClient $client) {}
+    public function __construct(
+        private readonly LanCoreClient $client,
+        private readonly UserSyncService $syncService,
+        private readonly SyncUserRolesFromLanCore $syncRoles,
+    ) {}
 
-    public function redirect(): \Symfony\Component\HttpFoundation\Response
+    public function redirect(): Response
     {
         try {
             return Inertia::location($this->client->ssoAuthorizeUrl());
@@ -47,9 +50,8 @@ class AuthController extends Controller
 
         try {
             $lanCoreUser = $this->client->exchangeCode($code);
-            $role = $this->resolveRoleFromLanCore($lanCoreUser->roles);
-
-            $user = $this->upsertLanCoreUser($lanCoreUser, $role);
+            $user = $this->syncService->resolveFromLanCore($lanCoreUser);
+            $this->syncRoles->handle($user, $lanCoreUser->roles);
         } catch (LanCoreRequestException $e) {
             return redirect()->route('login')->with('error', $e->statusCode === 400
                 ? 'The login link has expired. Please try again.'
@@ -92,27 +94,33 @@ class AuthController extends Controller
             'Missing role information.',
         );
 
-        $roles = is_array($decoded['roles'] ?? null)
-            ? array_values(array_filter($decoded['roles'], 'is_string'))
-            : [];
+        abort_unless(
+            isset($decoded['user_id']) && is_numeric($decoded['user_id']),
+            403,
+            'Missing user identifier.',
+        );
 
-        $role = isset($decoded['role']) && is_string($decoded['role'])
-            ? UserRole::tryFrom($decoded['role']) ?? UserRole::User
-            : $this->resolveRoleFromLanCore($roles);
+        if (isset($decoded['role']) && is_string($decoded['role'])) {
+            $roles = [$decoded['role']];
+        } elseif (is_array($decoded['roles'] ?? null)) {
+            $roles = array_values(array_filter($decoded['roles'], 'is_string'));
+        } else {
+            $roles = [];
+        }
 
-        $externalId = isset($decoded['user_id']) ? (string) $decoded['user_id'] : null;
         $email = isset($decoded['email']) && is_string($decoded['email'])
             ? strtolower($decoded['email'])
-            : ($externalId !== null ? "lancore-user-{$externalId}@users.lancore.local" : null);
+            : null;
 
-        abort_unless($email !== null, 403, 'Invalid payload.');
-
-        $user = $this->upsertLanCoreUserFromArray(
-            $externalId,
-            $decoded['name'] ?? 'Unknown',
-            $email,
-            $role,
+        $lanCoreUser = new LanCoreUser(
+            id: (int) $decoded['user_id'],
+            username: is_string($decoded['name'] ?? null) ? $decoded['name'] : 'Unknown',
+            email: $email,
+            roles: $roles,
         );
+
+        $user = $this->syncService->resolveFromLanCore($lanCoreUser);
+        $this->syncRoles->handle($user, $roles);
 
         Auth::login($user);
         $request->session()->regenerate();
@@ -120,68 +128,6 @@ class AuthController extends Controller
         $redirect = $request->query('redirect', '/');
 
         return redirect()->to($redirect);
-    }
-
-    /**
-     * @param  array<int, string>  $roles
-     */
-    private function resolveRoleFromLanCore(array $roles): UserRole
-    {
-        return collect($roles)
-            ->map(fn (string $role) => UserRole::tryFrom($role))
-            ->filter()
-            ->sortByDesc(fn (UserRole $role) => match ($role) {
-                UserRole::Superadmin => 4,
-                UserRole::Admin => 3,
-                UserRole::Moderator => 2,
-                UserRole::User => 1,
-            })
-            ->first() ?? UserRole::User;
-    }
-
-    private function upsertLanCoreUser(LanCoreUser $lanCoreUser, UserRole $role): User
-    {
-        return $this->upsertLanCoreUserFromArray(
-            (string) $lanCoreUser->id,
-            $lanCoreUser->username,
-            $lanCoreUser->email,
-            $role,
-        );
-    }
-
-    private function upsertLanCoreUserFromArray(?string $externalId, string $name, ?string $email, UserRole $role): User
-    {
-        $email ??= $externalId !== null ? "lancore-user-{$externalId}@users.lancore.local" : null;
-
-        abort_unless($email !== null, 403, 'Invalid payload.');
-
-        $user = null;
-
-        if ($externalId !== null) {
-            $user = User::query()
-                ->where('external_provider', 'lancore')
-                ->where('external_id', $externalId)
-                ->first();
-        }
-
-        if ($user === null) {
-            $user = User::query()->where('email', $email)->first();
-        }
-
-        $user ??= new User;
-
-        $user->forceFill([
-            'name' => $name,
-            'email' => $email,
-            'email_verified_at' => now(),
-            'role' => $role,
-            'external' => true,
-            'external_provider' => 'lancore',
-            'external_id' => $externalId,
-            'password' => $user->exists ? $user->getAuthPassword() : Hash::make(Str::random(40)),
-        ])->save();
-
-        return $user;
     }
 
     public function logout(Request $request): RedirectResponse

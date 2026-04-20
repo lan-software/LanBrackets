@@ -31,9 +31,7 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'role' => UserRole::User,
-            'external' => false,
-            'external_provider' => null,
-            'external_id' => null,
+            'lancore_user_id' => null,
             'remember_token' => Str::random(10),
         ];
     }
@@ -52,6 +50,13 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'role' => $role,
+        ]);
+    }
+
+    public function lanCoreUser(?int $lancoreId = null): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'lancore_user_id' => $lancoreId ?? fake()->unique()->numberBetween(1, 99999),
         ]);
     }
 }
