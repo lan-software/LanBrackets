@@ -24,6 +24,7 @@ class UserSyncService
             'name' => $lanCoreUser->username,
             'email' => $lanCoreUser->email ?? $user->email ?? 'lancore-user-'.$lanCoreUser->id.'@users.lancore.local',
             'email_verified_at' => now(),
+            'locale' => $lanCoreUser->locale ?? $user->locale,
             'lancore_user_id' => $lanCoreUser->id,
             'role' => $user->role ?? UserRole::User,
             'password' => $user->exists ? $user->getAuthPassword() : Hash::make(Str::random(40)),

@@ -40,11 +40,14 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'name' => config('app.name'),
+            'locale' => fn () => app()->getLocale(),
+            'availableLocales' => SetLocale::AVAILABLE,
             'auth' => [
                 'user' => $user === null ? null : [
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
+                    'locale' => $user->locale,
                     'role' => $user->role?->value,
                     'external' => $user->lancore_user_id !== null,
                 ],

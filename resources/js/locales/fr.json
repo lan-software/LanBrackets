@@ -1,0 +1,25 @@
+{
+    "common": {
+        "appName": "LanBrackets",
+        "loading": "Chargement...",
+        "error": "Erreur",
+        "success": "Succès",
+        "save": "Enregistrer",
+        "cancel": "Annuler",
+        "close": "Fermer",
+        "submit": "Envoyer",
+        "back": "Retour"
+    },
+    "navigation": {
+        "home": "Accueil",
+        "dashboard": "Tableau de bord",
+        "tournaments": "Tournois",
+        "matches": "Matchs"
+    },
+    "settings": {
+        "language": {
+            "current": "Langue d'affichage",
+            "managedInLanCore": "Modifiez votre langue dans votre profil LanCore."
+        }
+    }
+}
