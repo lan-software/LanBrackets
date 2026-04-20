@@ -46,7 +46,8 @@ it('authenticates with valid signed URL', function () {
 
     $this->assertAuthenticated();
 
-    $this->get('/')->assertSuccessful();
+    // Authenticated users are forwarded from the landing page to the dashboard.
+    $this->get('/')->assertRedirect(route('dashboard'));
 });
 
 it('creates or updates a LanCore user after callback', function () {
@@ -144,12 +145,13 @@ it('blocks unauthenticated access to web UI', function () {
         ->assertRedirect(route('auth.redirect'));
 });
 
-it('blocks unauthenticated access to home page', function () {
+it('serves the public landing page to guests', function () {
     $this->withoutVite();
-    config(['lancore.enabled' => true]);
 
+    // The root route renders a public Landing page for unauthenticated
+    // visitors — auth gating only applies to /dashboard, /competitions, etc.
     $this->get('/')
-        ->assertRedirect(route('auth.redirect'));
+        ->assertSuccessful();
 });
 
 it('allows authenticated access to web UI', function () {
@@ -194,6 +196,9 @@ it('clears session on logout', function () {
     $this->post('/auth/logout')
         ->assertRedirect(route('login'));
 
+    $this->assertGuest();
+
+    // After logout the guest lands on the public landing page (/ is public).
     $this->get('/')
-        ->assertRedirect(route('login'));
+        ->assertSuccessful();
 });

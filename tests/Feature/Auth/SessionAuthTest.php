@@ -7,7 +7,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 it('renders the login page', function () {
-    $this->get(route('login'))
+    // LanCore is enabled by default in .env, so /login redirects to SSO.
+    // ?local=1 forces the native login form to render.
+    $this->get(route('login', ['local' => '']))
         ->assertSuccessful();
 });
 
@@ -24,17 +26,18 @@ it('authenticates privileged users with the login form', function () {
     $this->assertAuthenticatedAs($user);
 });
 
-it('redirects guests to login when they access the web ui', function () {
+it('serves the landing page to guests without a redirect', function () {
+    // / is a public landing page — guests see it directly.
     $this->get(route('home'))
-        ->assertRedirect(route('login'));
+        ->assertSuccessful();
 });
 
-it('allows authenticated users without a privileged role to view the welcome page', function () {
+it('forwards authenticated users from the landing page to the dashboard', function () {
     $user = User::factory()->withRole(UserRole::User)->create();
 
     $this->actingAs($user)
         ->get(route('home'))
-        ->assertSuccessful();
+        ->assertRedirect(route('dashboard'));
 });
 
 it('returns forbidden for authenticated users without a privileged role on competitions', function () {
