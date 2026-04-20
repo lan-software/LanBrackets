@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "21e7de53110a3cca631384066b543c22",
+    "content-hash": "b72cf719a3120cdf9a22b4849d50ee4c",
     "packages": [
         {
             "name": "brick/math",
@@ -1216,11 +1216,17 @@
         },
         {
             "name": "lan-software/lancore-client",
-            "version": "dev-main",
+            "version": "v0.1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/lan-software/lancore-client.git",
+                "reference": "dfb361d510bd3a18e8d08d13bd8fabb144a5232b"
+            },
             "dist": {
-                "type": "path",
-                "url": "../lancore-client",
-                "reference": "23b2555ce4597ea641a75ef660b6e95604f167cf"
+                "type": "zip",
+                "url": "https://api.github.com/repos/lan-software/lancore-client/zipball/dfb361d510bd3a18e8d08d13bd8fabb144a5232b",
+                "reference": "dfb361d510bd3a18e8d08d13bd8fabb144a5232b",
+                "shasum": ""
             },
             "require": {
                 "illuminate/contracts": "^13.0",
@@ -1246,19 +1252,16 @@
                     "LanSoftware\\LanCoreClient\\": "src/"
                 }
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "LanSoftware\\LanCoreClient\\Tests\\": "tests/"
-                }
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
             "description": "Canonical LanCore Integration API client for Lan* satellite applications",
-            "transport-options": {
-                "symlink": false,
-                "relative": true
-            }
+            "support": {
+                "issues": "https://github.com/lan-software/lancore-client/issues",
+                "source": "https://github.com/lan-software/lancore-client/tree/v0.1.1"
+            },
+            "time": "2026-04-20T06:57:28+00:00"
         },
         {
             "name": "laravel/framework",
@@ -9882,9 +9885,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "lan-software/lancore-client": 20
-    },
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {

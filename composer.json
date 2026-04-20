@@ -8,17 +8,10 @@
         "framework"
     ],
     "license": "MIT",
-    "repositories": [
-        {
-            "type": "path",
-            "url": "../lancore-client",
-            "options": {"symlink": false}
-        }
-    ],
     "require": {
         "php": "^8.3",
         "inertiajs/inertia-laravel": "^2.0",
-        "lan-software/lancore-client": "@dev",
+        "lan-software/lancore-client": "^0.1.1",
         "laravel/framework": "^13.0",
         "laravel/octane": "^2.17",
         "laravel/tinker": "^3.0",
