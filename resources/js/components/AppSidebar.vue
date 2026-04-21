@@ -29,7 +29,11 @@ const canManageBrackets = computed(() =>
 
 const mainNavItems = computed((): NavItem[] => {
     const items: NavItem[] = [
-        { title: t('navigation.dashboard'), href: dashboard(), icon: LayoutGrid },
+        {
+            title: t('navigation.dashboard'),
+            href: dashboard(),
+            icon: LayoutGrid,
+        },
     ];
 
     if (canManageBrackets.value) {
