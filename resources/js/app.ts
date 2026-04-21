@@ -4,7 +4,8 @@ import type { DefineComponent } from 'vue';
 import { createApp, h } from 'vue';
 import DemoShell from '@/components/demo/DemoShell.vue';
 import { initializeTheme } from '@/composables/useAppearance';
-import i18n, { type AvailableLocale } from '@/i18n';
+import i18n from '@/i18n';
+import type {AvailableLocale} from '@/i18n';
 import AppLayout from '@/layouts/AppLayout.vue';
 import '../css/app.css';
 
@@ -34,6 +35,7 @@ createInertiaApp({
             auth?: { user?: { locale?: AvailableLocale } };
         };
         const locale = shared.auth?.user?.locale ?? shared.locale;
+
         if (locale && i18n.global.availableLocales.includes(locale)) {
             i18n.global.locale.value = locale;
         }
