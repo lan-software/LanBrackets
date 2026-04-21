@@ -2,24 +2,213 @@
     "common": {
         "appName": "LanBrackets",
         "loading": "Chargement...",
+        "saving": "Enregistrement...",
         "error": "Erreur",
         "success": "Succès",
         "save": "Enregistrer",
+        "saved": "Enregistré.",
         "cancel": "Annuler",
+        "delete": "Supprimer",
+        "edit": "Modifier",
         "close": "Fermer",
         "submit": "Envoyer",
-        "back": "Retour"
-    },
-    "navigation": {
-        "home": "Accueil",
+        "search": "Rechercher",
+        "settings": "Paramètres",
+        "logout": "Se déconnecter",
+        "profile": "Profil",
         "dashboard": "Tableau de bord",
-        "tournaments": "Tournois",
-        "matches": "Matchs"
+        "admin": "Admin",
+        "users": "Utilisateurs",
+        "back": "Retour",
+        "create": "Créer",
+        "update": "Mettre à jour",
+        "confirm": "Confirmer",
+        "yes": "Oui",
+        "no": "Non",
+        "add": "Ajouter",
+        "remove": "Retirer",
+        "actions": "Actions",
+        "view": "Voir",
+        "copy": "Copier",
+        "copied": "Copié",
+        "optional": "facultatif",
+        "required": "requis",
+        "loadingMore": "Chargement de plus...",
+        "noResults": "Aucun résultat trouvé",
+        "showMore": "Afficher plus",
+        "showLess": "Afficher moins"
+    },
+    "auth": {
+        "login": {
+            "title": "Connectez-vous à votre compte",
+            "description": "Saisissez votre e-mail et votre mot de passe ci-dessous pour vous connecter",
+            "email": "Adresse e-mail",
+            "emailPlaceholder": "email@exemple.fr",
+            "password": "Mot de passe",
+            "passwordPlaceholder": "Mot de passe",
+            "rememberMe": "Se souvenir de moi",
+            "forgotPassword": "Mot de passe oublié ?",
+            "button": "Se connecter",
+            "noAccount": "Pas encore de compte ?",
+            "signUp": "S'inscrire"
+        },
+        "register": {
+            "title": "Créer un compte",
+            "description": "Saisissez vos informations pour créer un compte",
+            "name": "Nom",
+            "namePlaceholder": "Nom complet",
+            "email": "Adresse e-mail",
+            "emailPlaceholder": "email@exemple.fr",
+            "password": "Mot de passe",
+            "passwordPlaceholder": "Mot de passe",
+            "confirmPassword": "Confirmer le mot de passe",
+            "button": "Créer un compte",
+            "hasAccount": "Déjà un compte ?",
+            "logIn": "Se connecter"
+        },
+        "forgotPassword": {
+            "title": "Mot de passe oublié ?",
+            "description": "Saisissez votre adresse e-mail et nous vous enverrons un lien de réinitialisation.",
+            "email": "Adresse e-mail",
+            "emailPlaceholder": "email@exemple.fr",
+            "button": "Envoyer le lien",
+            "backToLogin": "Retour à la connexion"
+        },
+        "resetPassword": {
+            "title": "Réinitialiser votre mot de passe",
+            "description": "Saisissez votre nouveau mot de passe ci-dessous",
+            "email": "Adresse e-mail",
+            "password": "Mot de passe",
+            "passwordPlaceholder": "Mot de passe",
+            "confirmPassword": "Confirmer le mot de passe",
+            "button": "Réinitialiser le mot de passe"
+        },
+        "verifyEmail": {
+            "title": "Vérifier votre adresse e-mail",
+            "description": "Merci pour votre inscription ! Avant de commencer, pourriez-vous vérifier votre adresse e-mail en cliquant sur le lien que nous venons de vous envoyer ?",
+            "resendButton": "Renvoyer l'e-mail de vérification",
+            "linkSent": "Un nouveau lien de vérification a été envoyé à votre adresse e-mail.",
+            "logout": "Se déconnecter"
+        },
+        "confirmPassword": {
+            "title": "Confirmer votre mot de passe",
+            "description": "Il s'agit d'une zone sécurisée de l'application. Veuillez confirmer votre mot de passe avant de continuer.",
+            "password": "Mot de passe",
+            "passwordPlaceholder": "Mot de passe",
+            "button": "Confirmer"
+        },
+        "localAuthNotice": "Cet espace utilise désormais le flux d'authentification Laravel local.",
+        "localAuthHint": "Connectez-vous pour gérer les brackets et le déroulement des matchs."
     },
     "settings": {
+        "title": "Paramètres",
+        "description": "Gérez les paramètres et préférences de votre compte",
+        "profile": {
+            "title": "Profil",
+            "description": "Mettez à jour votre nom et votre adresse e-mail",
+            "name": "Nom",
+            "email": "Adresse e-mail",
+            "updateButton": "Enregistrer",
+            "updated": "Enregistré."
+        },
+        "password": {
+            "title": "Mot de passe",
+            "description": "Assurez-vous que votre compte utilise un mot de passe long et aléatoire pour rester sécurisé.",
+            "currentPassword": "Mot de passe actuel",
+            "newPassword": "Nouveau mot de passe",
+            "confirmPassword": "Confirmer le mot de passe",
+            "updateButton": "Enregistrer le mot de passe",
+            "updated": "Mot de passe mis à jour."
+        },
+        "appearance": {
+            "title": "Apparence",
+            "description": "Mettez à jour les paramètres d'apparence de votre compte",
+            "theme": "Thème",
+            "light": "Clair",
+            "dark": "Sombre",
+            "system": "Système"
+        },
         "language": {
             "current": "Langue d'affichage",
             "managedInLanCore": "Modifiez votre langue dans votre profil LanCore."
         }
+    },
+    "navigation": {
+        "home": "Accueil",
+        "dashboard": "Tableau de bord",
+        "competitions": "Compétitions",
+        "tournaments": "Tournois",
+        "matches": "Matchs",
+        "overlay": "Overlay",
+        "settings": "Paramètres",
+        "profile": "Profil",
+        "appearance": "Apparence",
+        "password": "Mot de passe"
+    },
+    "landing": {
+        "title": "Bienvenue sur LanBrackets",
+        "subtitle": "Brackets de tournois et gestion du déroulement des matchs pour vos événements LAN.",
+        "getStarted": "Commencer",
+        "logIn": "Se connecter",
+        "ssoWorking": "La connexion SSO LanCore fonctionne.",
+        "genericLanding": "Cette page est la page d'atterrissage authentifiée générique pour LanBrackets. Tout utilisateur connecté à LanCore peut être authentifié dans cette application et vérifié ici.",
+        "signOut": "Se déconnecter",
+        "authenticatedUser": "Utilisateur authentifié",
+        "activeSession": "Session active",
+        "name": "Nom",
+        "email": "E-mail",
+        "role": "Rôle",
+        "provider": "Fournisseur",
+        "providerLanCore": "LanCore",
+        "providerLocal": "Local",
+        "nextStep": "Étape suivante",
+        "nextStepDescription": "Utilisez cette page pour confirmer que l'authentification LanCore s'est bien déroulée. Les utilisateurs privilégiés peuvent poursuivre vers l'interface de gestion des brackets.",
+        "bracketAccess": "Accès aux brackets",
+        "bracketAccessAllowed": "Votre rôle permet l'accès aux compétitions et à l'administration des brackets.",
+        "bracketAccessDenied": "Votre compte LanCore est connecté, mais la gestion des compétitions reste réservée aux rôles modérateur, admin et superadmin.",
+        "openCompetitions": "Ouvrir les compétitions",
+        "refreshLanCore": "Actualiser la connexion LanCore"
+    },
+    "dashboard": {
+        "title": "Tableau de bord",
+        "welcome": "Bon retour !",
+        "welcomeNamed": "Bon retour, {name}.",
+        "description": "Gérez vos brackets de tournois et vos compétitions.",
+        "yourAccount": "Votre compte",
+        "competitionsCanManage": "Votre rôle permet l'accès à la gestion des compétitions. Créez des brackets, rapportez les résultats et gérez les classements.",
+        "competitionsRestricted": "La gestion des compétitions est réservée aux rôles modérateur, admin et superadmin.",
+        "quickActions": "Actions rapides",
+        "refreshSsoSession": "Actualiser la session LanCore",
+        "providerLanCoreSso": "LanCore SSO"
+    },
+    "competitions": {
+        "title": "Compétitions",
+        "create": "Créer une compétition",
+        "name": "Nom",
+        "game": "Jeu",
+        "format": "Format",
+        "participants": "Participants",
+        "status": "Statut",
+        "startDate": "Date de début",
+        "empty": "Aucune compétition pour le moment.",
+        "createFirst": "Créer votre première compétition"
+    },
+    "matches": {
+        "title": "Matchs",
+        "upcoming": "À venir",
+        "live": "En direct",
+        "completed": "Terminés",
+        "round": "Tour {round}",
+        "vs": "vs",
+        "winner": "Vainqueur",
+        "empty": "Aucun match prévu"
+    },
+    "validation": {
+        "required": "Ce champ est obligatoire",
+        "email": "Veuillez saisir une adresse e-mail valide",
+        "minLength": "Doit contenir au moins {min} caractères",
+        "maxLength": "Ne doit pas dépasser {max} caractères",
+        "passwordMatch": "Les mots de passe doivent correspondre",
+        "invalid": "Valeur invalide"
     }
 }

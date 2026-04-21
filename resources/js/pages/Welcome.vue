@@ -21,7 +21,7 @@ const canManageBrackets = computed(() =>
 </script>
 
 <template>
-    <Head title="Welcome" />
+    <Head :title="$t('landing.title')" />
 
     <div
         class="min-h-screen bg-[radial-gradient(circle_at_top_left,_#fbefe2,_transparent_35%),linear-gradient(180deg,_#f7f3eb_0%,_#efe7db_100%)] px-6 py-10 text-stone-900"
@@ -34,17 +34,15 @@ const canManageBrackets = computed(() =>
                     <p
                         class="text-sm font-medium tracking-[0.24em] text-stone-500 uppercase"
                     >
-                        LanBrackets
+                        {{ $t('common.appName') }}
                     </p>
                     <h1
                         class="max-w-2xl font-serif text-4xl leading-tight text-stone-950 md:text-5xl"
                     >
-                        LanCore SSO login is working.
+                        {{ $t('landing.ssoWorking') }}
                     </h1>
                     <p class="max-w-2xl text-base leading-7 text-stone-600">
-                        This page is the generic authenticated landing page for
-                        LanBrackets. Any user who is signed into LanCore can be
-                        logged into this app and verified here.
+                        {{ $t('landing.genericLanding') }}
                     </p>
                 </div>
 
@@ -54,7 +52,7 @@ const canManageBrackets = computed(() =>
                     as="button"
                     class="inline-flex items-center justify-center rounded-full border border-stone-400 px-5 py-2.5 text-sm font-semibold text-stone-700 transition hover:border-stone-700 hover:text-stone-950"
                 >
-                    Sign out
+                    {{ $t('landing.signOut') }}
                 </Link>
             </header>
 
@@ -64,12 +62,12 @@ const canManageBrackets = computed(() =>
                 >
                     <div class="mb-6 flex items-center justify-between">
                         <h2 class="text-xl font-semibold text-stone-950">
-                            Authenticated User
+                            {{ $t('landing.authenticatedUser') }}
                         </h2>
                         <span
                             class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold tracking-[0.2em] text-emerald-700 uppercase"
                         >
-                            Active Session
+                            {{ $t('landing.activeSession') }}
                         </span>
                     </div>
 
@@ -78,7 +76,7 @@ const canManageBrackets = computed(() =>
                             <dt
                                 class="text-xs font-semibold tracking-[0.2em] text-stone-500 uppercase"
                             >
-                                Name
+                                {{ $t('landing.name') }}
                             </dt>
                             <dd class="mt-2 text-lg font-medium text-stone-950">
                                 {{ user?.name }}
@@ -88,7 +86,7 @@ const canManageBrackets = computed(() =>
                             <dt
                                 class="text-xs font-semibold tracking-[0.2em] text-stone-500 uppercase"
                             >
-                                Email
+                                {{ $t('landing.email') }}
                             </dt>
                             <dd class="mt-2 text-lg font-medium text-stone-950">
                                 {{ user?.email }}
@@ -98,7 +96,7 @@ const canManageBrackets = computed(() =>
                             <dt
                                 class="text-xs font-semibold tracking-[0.2em] text-stone-500 uppercase"
                             >
-                                Role
+                                {{ $t('landing.role') }}
                             </dt>
                             <dd
                                 class="mt-2 text-lg font-medium text-stone-950 capitalize"
@@ -110,10 +108,14 @@ const canManageBrackets = computed(() =>
                             <dt
                                 class="text-xs font-semibold tracking-[0.2em] text-stone-500 uppercase"
                             >
-                                Provider
+                                {{ $t('landing.provider') }}
                             </dt>
                             <dd class="mt-2 text-lg font-medium text-stone-950">
-                                {{ user?.external ? 'LanCore' : 'Local' }}
+                                {{
+                                    user?.external
+                                        ? $t('landing.providerLanCore')
+                                        : $t('landing.providerLocal')
+                                }}
                             </dd>
                         </div>
                     </dl>
@@ -122,11 +124,11 @@ const canManageBrackets = computed(() =>
                 <aside
                     class="rounded-3xl border border-stone-300/70 bg-[#23160f] p-8 text-stone-100 shadow-[0_24px_80px_rgba(66,44,24,0.18)]"
                 >
-                    <h2 class="text-xl font-semibold">Next step</h2>
+                    <h2 class="text-xl font-semibold">
+                        {{ $t('landing.nextStep') }}
+                    </h2>
                     <p class="mt-3 text-sm leading-7 text-stone-300">
-                        Use this page to confirm that LanCore authentication
-                        completed successfully. Privileged users can continue
-                        into the bracket management interface.
+                        {{ $t('landing.nextStepDescription') }}
                     </p>
 
                     <div
@@ -135,17 +137,14 @@ const canManageBrackets = computed(() =>
                         <p
                             class="text-xs font-semibold tracking-[0.2em] text-stone-400 uppercase"
                         >
-                            Bracket Access
+                            {{ $t('landing.bracketAccess') }}
                         </p>
                         <p class="mt-3 text-sm leading-7 text-stone-200">
                             <span v-if="canManageBrackets">
-                                Your role allows access to competitions and
-                                bracket administration.
+                                {{ $t('landing.bracketAccessAllowed') }}
                             </span>
                             <span v-else>
-                                Your LanCore account is logged in, but
-                                competition management remains restricted to
-                                moderator, admin, and superadmin roles.
+                                {{ $t('landing.bracketAccessDenied') }}
                             </span>
                         </p>
                     </div>
@@ -156,13 +155,13 @@ const canManageBrackets = computed(() =>
                             href="/competitions"
                             class="inline-flex items-center justify-center rounded-full bg-[#f08a43] px-5 py-2.5 text-sm font-semibold text-stone-950 transition hover:bg-[#ff9c59]"
                         >
-                            Open Competitions
+                            {{ $t('landing.openCompetitions') }}
                         </Link>
                         <a
                             href="/auth/redirect"
                             class="inline-flex items-center justify-center rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-stone-100 transition hover:border-white/40"
                         >
-                            Refresh LanCore Login
+                            {{ $t('landing.refreshLanCore') }}
                         </a>
                     </div>
                 </aside>

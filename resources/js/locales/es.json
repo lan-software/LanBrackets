@@ -2,24 +2,213 @@
     "common": {
         "appName": "LanBrackets",
         "loading": "Cargando...",
+        "saving": "Guardando...",
         "error": "Error",
         "success": "Éxito",
         "save": "Guardar",
+        "saved": "Guardado.",
         "cancel": "Cancelar",
+        "delete": "Eliminar",
+        "edit": "Editar",
         "close": "Cerrar",
         "submit": "Enviar",
-        "back": "Atrás"
-    },
-    "navigation": {
-        "home": "Inicio",
+        "search": "Buscar",
+        "settings": "Ajustes",
+        "logout": "Cerrar sesión",
+        "profile": "Perfil",
         "dashboard": "Panel",
-        "tournaments": "Torneos",
-        "matches": "Partidos"
+        "admin": "Admin",
+        "users": "Usuarios",
+        "back": "Atrás",
+        "create": "Crear",
+        "update": "Actualizar",
+        "confirm": "Confirmar",
+        "yes": "Sí",
+        "no": "No",
+        "add": "Añadir",
+        "remove": "Quitar",
+        "actions": "Acciones",
+        "view": "Ver",
+        "copy": "Copiar",
+        "copied": "Copiado",
+        "optional": "opcional",
+        "required": "obligatorio",
+        "loadingMore": "Cargando más...",
+        "noResults": "No se encontraron resultados",
+        "showMore": "Mostrar más",
+        "showLess": "Mostrar menos"
+    },
+    "auth": {
+        "login": {
+            "title": "Inicia sesión en tu cuenta",
+            "description": "Introduce tu correo electrónico y contraseña a continuación para iniciar sesión",
+            "email": "Correo electrónico",
+            "emailPlaceholder": "email@ejemplo.es",
+            "password": "Contraseña",
+            "passwordPlaceholder": "Contraseña",
+            "rememberMe": "Recuérdame",
+            "forgotPassword": "¿Olvidaste tu contraseña?",
+            "button": "Iniciar sesión",
+            "noAccount": "¿No tienes cuenta?",
+            "signUp": "Regístrate"
+        },
+        "register": {
+            "title": "Crear una cuenta",
+            "description": "Introduce tus datos para crear una cuenta",
+            "name": "Nombre",
+            "namePlaceholder": "Nombre completo",
+            "email": "Correo electrónico",
+            "emailPlaceholder": "email@ejemplo.es",
+            "password": "Contraseña",
+            "passwordPlaceholder": "Contraseña",
+            "confirmPassword": "Confirmar contraseña",
+            "button": "Crear cuenta",
+            "hasAccount": "¿Ya tienes cuenta?",
+            "logIn": "Iniciar sesión"
+        },
+        "forgotPassword": {
+            "title": "¿Olvidaste tu contraseña?",
+            "description": "Introduce tu correo electrónico y te enviaremos un enlace para restablecer la contraseña.",
+            "email": "Correo electrónico",
+            "emailPlaceholder": "email@ejemplo.es",
+            "button": "Enviar enlace",
+            "backToLogin": "Volver al inicio de sesión"
+        },
+        "resetPassword": {
+            "title": "Restablecer tu contraseña",
+            "description": "Introduce tu nueva contraseña a continuación",
+            "email": "Correo electrónico",
+            "password": "Contraseña",
+            "passwordPlaceholder": "Contraseña",
+            "confirmPassword": "Confirmar contraseña",
+            "button": "Restablecer contraseña"
+        },
+        "verifyEmail": {
+            "title": "Verificar tu correo electrónico",
+            "description": "¡Gracias por registrarte! Antes de empezar, ¿podrías verificar tu correo electrónico haciendo clic en el enlace que te acabamos de enviar?",
+            "resendButton": "Reenviar correo de verificación",
+            "linkSent": "Se ha enviado un nuevo enlace de verificación a tu correo electrónico.",
+            "logout": "Cerrar sesión"
+        },
+        "confirmPassword": {
+            "title": "Confirmar tu contraseña",
+            "description": "Esta es un área segura de la aplicación. Confirma tu contraseña antes de continuar.",
+            "password": "Contraseña",
+            "passwordPlaceholder": "Contraseña",
+            "button": "Confirmar"
+        },
+        "localAuthNotice": "Este espacio de trabajo ahora usa el flujo de autenticación Laravel local.",
+        "localAuthHint": "Inicia sesión para gestionar los brackets y el flujo de partidas."
     },
     "settings": {
+        "title": "Ajustes",
+        "description": "Gestiona los ajustes y preferencias de tu cuenta",
+        "profile": {
+            "title": "Perfil",
+            "description": "Actualiza tu nombre y tu correo electrónico",
+            "name": "Nombre",
+            "email": "Correo electrónico",
+            "updateButton": "Guardar",
+            "updated": "Guardado."
+        },
+        "password": {
+            "title": "Contraseña",
+            "description": "Asegúrate de que tu cuenta use una contraseña larga y aleatoria para mantenerse segura.",
+            "currentPassword": "Contraseña actual",
+            "newPassword": "Nueva contraseña",
+            "confirmPassword": "Confirmar contraseña",
+            "updateButton": "Guardar contraseña",
+            "updated": "Contraseña actualizada."
+        },
+        "appearance": {
+            "title": "Apariencia",
+            "description": "Actualiza los ajustes de apariencia de tu cuenta",
+            "theme": "Tema",
+            "light": "Claro",
+            "dark": "Oscuro",
+            "system": "Sistema"
+        },
         "language": {
             "current": "Idioma de visualización",
             "managedInLanCore": "Cambia tu idioma en tu perfil de LanCore."
         }
+    },
+    "navigation": {
+        "home": "Inicio",
+        "dashboard": "Panel",
+        "competitions": "Competiciones",
+        "tournaments": "Torneos",
+        "matches": "Partidos",
+        "overlay": "Overlay",
+        "settings": "Ajustes",
+        "profile": "Perfil",
+        "appearance": "Apariencia",
+        "password": "Contraseña"
+    },
+    "landing": {
+        "title": "Bienvenido a LanBrackets",
+        "subtitle": "Brackets de torneos y gestión de flujo de partidas para tus eventos LAN.",
+        "getStarted": "Empezar",
+        "logIn": "Iniciar sesión",
+        "ssoWorking": "El inicio de sesión SSO de LanCore funciona.",
+        "genericLanding": "Esta página es la página de destino autenticada genérica para LanBrackets. Cualquier usuario que haya iniciado sesión en LanCore puede autenticarse en esta aplicación y verificarse aquí.",
+        "signOut": "Cerrar sesión",
+        "authenticatedUser": "Usuario autenticado",
+        "activeSession": "Sesión activa",
+        "name": "Nombre",
+        "email": "Correo",
+        "role": "Rol",
+        "provider": "Proveedor",
+        "providerLanCore": "LanCore",
+        "providerLocal": "Local",
+        "nextStep": "Siguiente paso",
+        "nextStepDescription": "Usa esta página para confirmar que la autenticación de LanCore se completó correctamente. Los usuarios con privilegios pueden continuar a la interfaz de gestión de brackets.",
+        "bracketAccess": "Acceso a brackets",
+        "bracketAccessAllowed": "Tu rol permite el acceso a competiciones y administración de brackets.",
+        "bracketAccessDenied": "Tu cuenta de LanCore está autenticada, pero la gestión de competiciones está restringida a los roles de moderador, admin y superadmin.",
+        "openCompetitions": "Abrir competiciones",
+        "refreshLanCore": "Actualizar inicio de sesión de LanCore"
+    },
+    "dashboard": {
+        "title": "Panel",
+        "welcome": "¡Bienvenido de nuevo!",
+        "welcomeNamed": "¡Bienvenido de nuevo, {name}!",
+        "description": "Gestiona tus brackets de torneos y competiciones.",
+        "yourAccount": "Tu cuenta",
+        "competitionsCanManage": "Tu rol permite el acceso a la gestión de competiciones. Crea brackets, reporta resultados y gestiona clasificaciones.",
+        "competitionsRestricted": "La gestión de competiciones está restringida a los roles de moderador, admin y superadmin.",
+        "quickActions": "Acciones rápidas",
+        "refreshSsoSession": "Actualizar sesión de LanCore",
+        "providerLanCoreSso": "LanCore SSO"
+    },
+    "competitions": {
+        "title": "Competiciones",
+        "create": "Crear competición",
+        "name": "Nombre",
+        "game": "Juego",
+        "format": "Formato",
+        "participants": "Participantes",
+        "status": "Estado",
+        "startDate": "Fecha de inicio",
+        "empty": "Aún no hay competiciones.",
+        "createFirst": "Crea tu primera competición"
+    },
+    "matches": {
+        "title": "Partidos",
+        "upcoming": "Próximos",
+        "live": "En directo",
+        "completed": "Completados",
+        "round": "Ronda {round}",
+        "vs": "vs",
+        "winner": "Ganador",
+        "empty": "No hay partidos programados"
+    },
+    "validation": {
+        "required": "Este campo es obligatorio",
+        "email": "Introduce una dirección de correo electrónico válida",
+        "minLength": "Debe tener al menos {min} caracteres",
+        "maxLength": "No debe superar los {max} caracteres",
+        "passwordMatch": "Las contraseñas deben coincidir",
+        "invalid": "Valor no válido"
     }
 }

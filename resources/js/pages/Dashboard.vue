@@ -28,13 +28,15 @@ const canManageBrackets = computed(() =>
 </script>
 
 <template>
-    <Head title="Dashboard" />
+    <Head :title="$t('dashboard.title')" />
 
     <div class="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
         <div>
-            <h1 class="text-2xl font-bold">Welcome back, {{ user?.name }}.</h1>
+            <h1 class="text-2xl font-bold">
+                {{ $t('dashboard.welcomeNamed', { name: user?.name }) }}
+            </h1>
             <p class="mt-1 text-sm text-muted-foreground">
-                Manage your tournament brackets and competitions.
+                {{ $t('dashboard.description') }}
             </p>
         </div>
 
@@ -42,25 +44,35 @@ const canManageBrackets = computed(() =>
             <!-- User info -->
             <div class="rounded-xl border border-border bg-card p-6">
                 <h2 class="mb-4 text-sm font-semibold text-muted-foreground">
-                    Your Account
+                    {{ $t('dashboard.yourAccount') }}
                 </h2>
                 <dl class="space-y-3">
                     <div>
-                        <dt class="text-xs text-muted-foreground">Email</dt>
+                        <dt class="text-xs text-muted-foreground">
+                            {{ $t('landing.email') }}
+                        </dt>
                         <dd class="mt-0.5 text-sm font-medium">
                             {{ user?.email }}
                         </dd>
                     </div>
                     <div>
-                        <dt class="text-xs text-muted-foreground">Role</dt>
+                        <dt class="text-xs text-muted-foreground">
+                            {{ $t('landing.role') }}
+                        </dt>
                         <dd class="mt-0.5 text-sm font-medium capitalize">
                             {{ user?.role }}
                         </dd>
                     </div>
                     <div>
-                        <dt class="text-xs text-muted-foreground">Provider</dt>
+                        <dt class="text-xs text-muted-foreground">
+                            {{ $t('landing.provider') }}
+                        </dt>
                         <dd class="mt-0.5 text-sm font-medium">
-                            {{ user?.external ? 'LanCore SSO' : 'Local' }}
+                            {{
+                                user?.external
+                                    ? $t('dashboard.providerLanCoreSso')
+                                    : $t('landing.providerLocal')
+                            }}
                         </dd>
                     </div>
                 </dl>
@@ -69,18 +81,16 @@ const canManageBrackets = computed(() =>
             <!-- Competitions -->
             <div class="rounded-xl border border-border bg-card p-6">
                 <h2 class="mb-4 text-sm font-semibold text-muted-foreground">
-                    Competitions
+                    {{ $t('navigation.competitions') }}
                 </h2>
                 <p
                     v-if="canManageBrackets"
                     class="text-sm leading-relaxed text-muted-foreground"
                 >
-                    Your role grants access to competition management. Create
-                    brackets, report results, and manage standings.
+                    {{ $t('dashboard.competitionsCanManage') }}
                 </p>
                 <p v-else class="text-sm leading-relaxed text-muted-foreground">
-                    Competition management is restricted to moderator, admin,
-                    and superadmin roles.
+                    {{ $t('dashboard.competitionsRestricted') }}
                 </p>
                 <div class="mt-5">
                     <Link
@@ -89,7 +99,7 @@ const canManageBrackets = computed(() =>
                         class="inline-flex items-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
                     >
                         <Trophy class="mr-2 h-4 w-4" />
-                        Open Competitions
+                        {{ $t('landing.openCompetitions') }}
                     </Link>
                 </div>
             </div>
@@ -97,14 +107,14 @@ const canManageBrackets = computed(() =>
             <!-- Quick actions -->
             <div class="rounded-xl border border-border bg-card p-6">
                 <h2 class="mb-4 text-sm font-semibold text-muted-foreground">
-                    Quick Actions
+                    {{ $t('dashboard.quickActions') }}
                 </h2>
                 <div class="space-y-3">
                     <a
                         href="/auth/redirect"
                         class="flex w-full items-center rounded-lg border border-border px-4 py-2.5 text-sm text-muted-foreground transition hover:border-primary hover:text-foreground"
                     >
-                        Refresh LanCore Session
+                        {{ $t('dashboard.refreshSsoSession') }}
                     </a>
                 </div>
             </div>

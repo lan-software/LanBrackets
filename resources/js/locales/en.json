@@ -2,24 +2,213 @@
     "common": {
         "appName": "LanBrackets",
         "loading": "Loading...",
+        "saving": "Saving...",
         "error": "Error",
         "success": "Success",
         "save": "Save",
+        "saved": "Saved.",
         "cancel": "Cancel",
+        "delete": "Delete",
+        "edit": "Edit",
         "close": "Close",
         "submit": "Submit",
-        "back": "Back"
-    },
-    "navigation": {
-        "home": "Home",
+        "search": "Search",
+        "settings": "Settings",
+        "logout": "Log out",
+        "profile": "Profile",
         "dashboard": "Dashboard",
-        "tournaments": "Tournaments",
-        "matches": "Matches"
+        "admin": "Admin",
+        "users": "Users",
+        "back": "Back",
+        "create": "Create",
+        "update": "Update",
+        "confirm": "Confirm",
+        "yes": "Yes",
+        "no": "No",
+        "add": "Add",
+        "remove": "Remove",
+        "actions": "Actions",
+        "view": "View",
+        "copy": "Copy",
+        "copied": "Copied",
+        "optional": "optional",
+        "required": "required",
+        "loadingMore": "Loading more...",
+        "noResults": "No results found",
+        "showMore": "Show more",
+        "showLess": "Show less"
+    },
+    "auth": {
+        "login": {
+            "title": "Log in to your account",
+            "description": "Enter your email and password below to log in",
+            "email": "Email address",
+            "emailPlaceholder": "email@example.com",
+            "password": "Password",
+            "passwordPlaceholder": "Password",
+            "rememberMe": "Remember me",
+            "forgotPassword": "Forgot password?",
+            "button": "Log in",
+            "noAccount": "Don't have an account?",
+            "signUp": "Sign up"
+        },
+        "register": {
+            "title": "Create an account",
+            "description": "Enter your information to create an account",
+            "name": "Name",
+            "namePlaceholder": "Full name",
+            "email": "Email address",
+            "emailPlaceholder": "email@example.com",
+            "password": "Password",
+            "passwordPlaceholder": "Password",
+            "confirmPassword": "Confirm Password",
+            "button": "Create account",
+            "hasAccount": "Already have an account?",
+            "logIn": "Log in"
+        },
+        "forgotPassword": {
+            "title": "Forgot your password?",
+            "description": "Enter your email address and we'll send you a password reset link.",
+            "email": "Email address",
+            "emailPlaceholder": "email@example.com",
+            "button": "Send reset link",
+            "backToLogin": "Back to log in"
+        },
+        "resetPassword": {
+            "title": "Reset your password",
+            "description": "Enter your new password below",
+            "email": "Email address",
+            "password": "Password",
+            "passwordPlaceholder": "Password",
+            "confirmPassword": "Confirm Password",
+            "button": "Reset password"
+        },
+        "verifyEmail": {
+            "title": "Verify your email address",
+            "description": "Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you?",
+            "resendButton": "Resend verification email",
+            "linkSent": "A new verification link has been sent to your email address.",
+            "logout": "Log out"
+        },
+        "confirmPassword": {
+            "title": "Confirm your password",
+            "description": "This is a secure area of the application. Please confirm your password before continuing.",
+            "password": "Password",
+            "passwordPlaceholder": "Password",
+            "button": "Confirm"
+        },
+        "localAuthNotice": "This workspace now uses the local Laravel auth flow.",
+        "localAuthHint": "Sign in to manage brackets and match flow."
     },
     "settings": {
+        "title": "Settings",
+        "description": "Manage your account settings and preferences",
+        "profile": {
+            "title": "Profile",
+            "description": "Update your name and email address",
+            "name": "Name",
+            "email": "Email address",
+            "updateButton": "Save",
+            "updated": "Saved."
+        },
+        "password": {
+            "title": "Password",
+            "description": "Ensure your account is using a long, random password to stay secure.",
+            "currentPassword": "Current password",
+            "newPassword": "New password",
+            "confirmPassword": "Confirm password",
+            "updateButton": "Save password",
+            "updated": "Password updated."
+        },
+        "appearance": {
+            "title": "Appearance",
+            "description": "Update your account's appearance settings",
+            "theme": "Theme",
+            "light": "Light",
+            "dark": "Dark",
+            "system": "System"
+        },
         "language": {
             "current": "Display language",
             "managedInLanCore": "Change your language in your LanCore profile."
         }
+    },
+    "navigation": {
+        "home": "Home",
+        "dashboard": "Dashboard",
+        "competitions": "Competitions",
+        "tournaments": "Tournaments",
+        "matches": "Matches",
+        "overlay": "Overlay",
+        "settings": "Settings",
+        "profile": "Profile",
+        "appearance": "Appearance",
+        "password": "Password"
+    },
+    "landing": {
+        "title": "Welcome to LanBrackets",
+        "subtitle": "Tournament brackets and match-flow management for your LAN events.",
+        "getStarted": "Get started",
+        "logIn": "Log in",
+        "ssoWorking": "LanCore SSO login is working.",
+        "genericLanding": "This page is the generic authenticated landing page for LanBrackets. Any user who is signed into LanCore can be logged into this app and verified here.",
+        "signOut": "Sign out",
+        "authenticatedUser": "Authenticated user",
+        "activeSession": "Active session",
+        "name": "Name",
+        "email": "Email",
+        "role": "Role",
+        "provider": "Provider",
+        "providerLanCore": "LanCore",
+        "providerLocal": "Local",
+        "nextStep": "Next step",
+        "nextStepDescription": "Use this page to confirm that LanCore authentication completed successfully. Privileged users can continue into the bracket management interface.",
+        "bracketAccess": "Bracket access",
+        "bracketAccessAllowed": "Your role allows access to competitions and bracket administration.",
+        "bracketAccessDenied": "Your LanCore account is logged in, but competition management remains restricted to moderator, admin, and superadmin roles.",
+        "openCompetitions": "Open competitions",
+        "refreshLanCore": "Refresh LanCore login"
+    },
+    "dashboard": {
+        "title": "Dashboard",
+        "welcome": "Welcome back!",
+        "welcomeNamed": "Welcome back, {name}.",
+        "description": "Manage your tournament brackets and competitions.",
+        "yourAccount": "Your account",
+        "competitionsCanManage": "Your role grants access to competition management. Create brackets, report results, and manage standings.",
+        "competitionsRestricted": "Competition management is restricted to moderator, admin, and superadmin roles.",
+        "quickActions": "Quick actions",
+        "refreshSsoSession": "Refresh LanCore session",
+        "providerLanCoreSso": "LanCore SSO"
+    },
+    "competitions": {
+        "title": "Competitions",
+        "create": "Create competition",
+        "name": "Name",
+        "game": "Game",
+        "format": "Format",
+        "participants": "Participants",
+        "status": "Status",
+        "startDate": "Start date",
+        "empty": "No competitions yet.",
+        "createFirst": "Create your first competition"
+    },
+    "matches": {
+        "title": "Matches",
+        "upcoming": "Upcoming",
+        "live": "Live",
+        "completed": "Completed",
+        "round": "Round {round}",
+        "vs": "vs",
+        "winner": "Winner",
+        "empty": "No matches scheduled"
+    },
+    "validation": {
+        "required": "This field is required",
+        "email": "Please enter a valid email address",
+        "minLength": "Must be at least {min} characters",
+        "maxLength": "Must be no more than {max} characters",
+        "passwordMatch": "Passwords must match",
+        "invalid": "Invalid value"
     }
 }

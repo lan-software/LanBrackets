@@ -17,7 +17,7 @@ function submit(): void {
 </script>
 
 <template>
-    <Head title="Login" />
+    <Head :title="$t('auth.login.button')" />
 
     <div
         class="relative min-h-screen overflow-hidden bg-stone-950 text-stone-100"
@@ -33,17 +33,15 @@ function submit(): void {
                     <p
                         class="text-sm tracking-[0.28em] text-amber-300/80 uppercase"
                     >
-                        LanBrackets
+                        {{ $t('common.appName') }}
                     </p>
                     <h1
                         class="mt-4 max-w-xl text-4xl leading-tight font-semibold text-white sm:text-5xl"
                     >
-                        Sign in to manage brackets and match flow.
+                        {{ $t('auth.localAuthHint') }}
                     </h1>
                     <p class="mt-5 max-w-lg text-base leading-7 text-stone-300">
-                        This workspace now uses the local Laravel auth flow,
-                        with access restricted to moderator, admin, and
-                        superadmin accounts.
+                        {{ $t('auth.localAuthNotice') }}
                     </p>
                 </section>
 
@@ -56,7 +54,7 @@ function submit(): void {
                                 class="mb-2 block text-sm font-medium text-stone-200"
                                 for="email"
                             >
-                                Email
+                                {{ $t('auth.login.email') }}
                             </label>
                             <input
                                 id="email"
@@ -79,7 +77,7 @@ function submit(): void {
                                 class="mb-2 block text-sm font-medium text-stone-200"
                                 for="password"
                             >
-                                Password
+                                {{ $t('auth.login.password') }}
                             </label>
                             <input
                                 id="password"
@@ -105,7 +103,7 @@ function submit(): void {
                                 type="checkbox"
                                 class="h-4 w-4 rounded border-white/20 bg-stone-950/70 text-amber-400 focus:ring-amber-300"
                             />
-                            <span>Remember me</span>
+                            <span>{{ $t('auth.login.rememberMe') }}</span>
                         </label>
 
                         <button
@@ -113,7 +111,7 @@ function submit(): void {
                             :disabled="form.processing"
                             class="w-full rounded-2xl bg-amber-300 px-4 py-3 text-sm font-semibold text-stone-950 transition hover:bg-amber-200 disabled:cursor-not-allowed disabled:opacity-70"
                         >
-                            Sign in
+                            {{ $t('auth.login.button') }}
                         </button>
                     </form>
                 </section>
