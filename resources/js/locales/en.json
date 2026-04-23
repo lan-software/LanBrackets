@@ -98,7 +98,18 @@
             "button": "Confirm"
         },
         "localAuthNotice": "This workspace now uses the local Laravel auth flow.",
-        "localAuthHint": "Sign in to manage brackets and match flow."
+        "localAuthHint": "Sign in to manage brackets and match flow.",
+        "unauthenticated": {
+            "title": "Access Restricted",
+            "description": "This application requires authentication via LanCore. Please log in to LanCore and navigate to the competition from there.",
+            "goToLanCore": "Go to LanCore"
+        },
+        "errors": {
+            "invalidCredentials": "The provided credentials are incorrect.",
+            "expiredSsoLink": "The login link has expired. Please try again.",
+            "ssoCallbackInvalid": "Invalid SSO callback. Please try again.",
+            "authServiceUnavailable": "Could not connect to authentication service. Please try again later."
+        }
     },
     "settings": {
         "title": "Settings",
@@ -143,7 +154,8 @@
         "settings": "Settings",
         "profile": "Profile",
         "appearance": "Appearance",
-        "password": "Password"
+        "password": "Password",
+        "platform": "Platform"
     },
     "landing": {
         "title": "Welcome to LanBrackets",
@@ -167,7 +179,22 @@
         "bracketAccessAllowed": "Your role allows access to competitions and bracket administration.",
         "bracketAccessDenied": "Your LanCore account is logged in, but competition management remains restricted to moderator, admin, and superadmin roles.",
         "openCompetitions": "Open competitions",
-        "refreshLanCore": "Refresh LanCore login"
+        "refreshLanCore": "Refresh LanCore login",
+        "pageTitle": "LanBrackets — Tournament Management",
+        "eyebrow": "Tournament Platform",
+        "hero": "Brackets, matches & standings — all in one place.",
+        "heroDescription": "LanBrackets manages tournament formats from single elimination to swiss rounds. Generate brackets, report match results, and track live standings for your LAN competitions.",
+        "signInToManage": "Sign in to manage",
+        "loginViaLanCore": "Login via LanCore",
+        "featureFormatsTitle": "Multiple Formats",
+        "featureFormatsBody": "Single & double elimination, round robin, swiss, and group stages.",
+        "featureLiveTitle": "Live Results",
+        "featureLiveBody": "Report scores, advance winners, and display bracket overlays in real-time.",
+        "featureIntegrationTitle": "LanCore Integration",
+        "featureIntegrationBody": "Participants and roles synced from LanCore. No duplicate sign-ups.",
+        "footer": "Powered by LanBrackets — Part of the Lan-Software ecosystem",
+        "dashboard": "Dashboard",
+        "signIn": "Sign in"
     },
     "dashboard": {
         "title": "Dashboard",
@@ -191,7 +218,31 @@
         "status": "Status",
         "startDate": "Start date",
         "empty": "No competitions yet.",
-        "createFirst": "Create your first competition"
+        "createFirst": "Create your first competition",
+        "countOne": "{count} competition",
+        "countMany": "{count} competitions",
+        "backToHome": "← Back to home",
+        "previousPage": "← Previous",
+        "nextPage": "Next →",
+        "pageOf": "Page {current} of {total}",
+        "stageCountOne": "{count} stage",
+        "stageCountMany": "{count} stages",
+        "statusDraft": "Draft",
+        "statusPlanned": "Planned",
+        "statusRegistrationOpen": "Registration open",
+        "statusRegistrationClosed": "Registration closed",
+        "statusRunning": "Running",
+        "statusCompleted": "Completed",
+        "statusCancelled": "Cancelled",
+        "statusArchived": "Archived",
+        "typeTournament": "Tournament",
+        "typeLeague": "League",
+        "typeRace": "Race",
+        "backToList": "← Competitions",
+        "matchesProgress": "{finished}/{total} matches",
+        "matchesReady": "{count} ready",
+        "noMatchesForStage": "No matches generated for this stage.",
+        "noMatchesGenerated": "No matches generated."
     },
     "matches": {
         "title": "Matches",
@@ -202,6 +253,15 @@
         "vs": "vs",
         "winner": "Winner",
         "empty": "No matches scheduled"
+    },
+    "bracket": {
+        "zoomIn": "+",
+        "zoomOut": "−",
+        "fitToScreen": "Fit",
+        "resetView": "Reset",
+        "legendReadyToPlay": "Ready to play",
+        "legendWinner": "Winner",
+        "legendPlacements": "Placements"
     },
     "validation": {
         "required": "This field is required",

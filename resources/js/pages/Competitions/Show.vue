@@ -61,7 +61,7 @@ const {
                         :href="index.url()"
                         class="text-sm text-gray-400 hover:text-white"
                     >
-                        ← Competitions
+                        {{ $t('competitions.backToList') }}
                     </Link>
                     <h1 class="text-lg font-bold text-white">
                         {{ competition.name }}
@@ -74,9 +74,9 @@ const {
                 </div>
 
                 <div class="flex items-center gap-3 text-sm text-gray-400">
-                    <span>{{ stats.finished }}/{{ stats.total }} matches</span>
+                    <span>{{ $t('competitions.matchesProgress', { finished: stats.finished, total: stats.total }) }}</span>
                     <span v-if="stats.ready > 0" class="text-yellow-400">
-                        {{ stats.ready }} ready
+                        {{ $t('competitions.matchesReady', { count: stats.ready }) }}
                     </span>
                 </div>
             </div>
@@ -126,7 +126,7 @@ const {
                         @click="zoomIn"
                         class="rounded bg-gray-800/80 px-3 py-1.5 text-sm text-white backdrop-blur hover:bg-gray-700"
                     >
-                        +
+                        {{ $t('bracket.zoomIn') }}
                     </button>
                     <div
                         class="rounded bg-gray-800/80 px-2 py-1 text-center text-xs text-gray-400 backdrop-blur"
@@ -137,19 +137,19 @@ const {
                         @click="zoomOut"
                         class="rounded bg-gray-800/80 px-3 py-1.5 text-sm text-white backdrop-blur hover:bg-gray-700"
                     >
-                        −
+                        {{ $t('bracket.zoomOut') }}
                     </button>
                     <button
                         @click="fitToScreen"
                         class="mt-1 rounded bg-gray-800/80 px-3 py-1.5 text-xs text-gray-400 backdrop-blur hover:bg-gray-700 hover:text-white"
                     >
-                        Fit
+                        {{ $t('bracket.fitToScreen') }}
                     </button>
                     <button
                         @click="resetView"
                         class="rounded bg-gray-800/80 px-3 py-1.5 text-xs text-gray-400 backdrop-blur hover:bg-gray-700 hover:text-white"
                     >
-                        Reset
+                        {{ $t('bracket.resetView') }}
                     </button>
                 </div>
 
@@ -161,17 +161,17 @@ const {
                         <span
                             class="inline-block h-3 w-3 rounded border-2 border-yellow-400"
                         ></span>
-                        Ready to play
+                        {{ $t('bracket.legendReadyToPlay') }}
                     </div>
                     <div class="flex items-center gap-2">
                         <span
                             class="inline-block h-3 w-3 rounded bg-green-500"
                         ></span>
-                        Winner
+                        {{ $t('bracket.legendWinner') }}
                     </div>
                     <div class="flex items-center gap-2">
                         <span>🥇🥈🥉</span>
-                        Placements
+                        {{ $t('bracket.legendPlacements') }}
                     </div>
                 </div>
 
@@ -181,7 +181,7 @@ const {
                     class="absolute inset-0 flex items-center justify-center"
                 >
                     <p class="text-gray-500">
-                        No matches generated for this stage.
+                        {{ $t('competitions.noMatchesForStage') }}
                     </p>
                 </div>
             </div>

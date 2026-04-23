@@ -35,7 +35,7 @@ class SessionController extends Controller
             'password' => $credentials['password'],
         ], $remember)) {
             throw ValidationException::withMessages([
-                'email' => 'The provided credentials are incorrect.',
+                'email' => __('auth.failed'),
             ]);
         }
 

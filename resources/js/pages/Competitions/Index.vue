@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
+import { useI18n } from 'vue-i18n';
 import { show } from '@/actions/App/Http/Controllers/CompetitionController';
+
+const { t } = useI18n();
 
 interface Competition {
     id: number;
@@ -44,16 +47,27 @@ const statusColor: Record<string, string> = {
     archived: 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400',
 };
 
+const statusLabel: Record<string, string> = {
+    draft: 'competitions.statusDraft',
+    planned: 'competitions.statusPlanned',
+    registration_open: 'competitions.statusRegistrationOpen',
+    registration_closed: 'competitions.statusRegistrationClosed',
+    running: 'competitions.statusRunning',
+    completed: 'competitions.statusCompleted',
+    cancelled: 'competitions.statusCancelled',
+    archived: 'competitions.statusArchived',
+};
+
 const typeLabel: Record<string, string> = {
-    tournament: 'Tournament',
-    league: 'League',
-    race: 'Race',
+    tournament: 'competitions.typeTournament',
+    league: 'competitions.typeLeague',
+    race: 'competitions.typeRace',
 };
 </script>
 
 <template>
     <div>
-        <Head title="Competitions" />
+        <Head :title="$t('competitions.title')" />
 
         <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
             <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -62,13 +76,15 @@ const typeLabel: Record<string, string> = {
                         <h1
                             class="text-3xl font-bold text-gray-900 dark:text-white"
                         >
-                            Competitions
+                            {{ $t('competitions.title') }}
                         </h1>
                         <p
                             class="mt-1 text-sm text-gray-500 dark:text-gray-400"
                         >
-                            {{ competitions.total }} competition{{
-                                competitions.total !== 1 ? 's' : ''
+                            {{
+                                competitions.total === 1
+                                    ? $t('competitions.countOne', { count: competitions.total })
+                                    : $t('competitions.countMany', { count: competitions.total })
                             }}
                         </p>
                     </div>
@@ -76,7 +92,7 @@ const typeLabel: Record<string, string> = {
                         href="/"
                         class="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                     >
-                        ← Back to home
+                        {{ $t('competitions.backToHome') }}
                     </Link>
                 </div>
 
@@ -85,7 +101,7 @@ const typeLabel: Record<string, string> = {
                     class="rounded-lg border border-dashed border-gray-300 p-12 text-center dark:border-gray-700"
                 >
                     <p class="text-gray-500 dark:text-gray-400">
-                        No competitions yet.
+                        {{ $t('competitions.empty') }}
                     </p>
                 </div>
 
@@ -114,7 +130,7 @@ const typeLabel: Record<string, string> = {
                                     'bg-gray-100 text-gray-700'
                                 "
                             >
-                                {{ competition.status.replace('_', ' ') }}
+                                {{ statusLabel[competition.status] ? $t(statusLabel[competition.status]) : competition.status }}
                             </span>
                         </div>
 
@@ -151,8 +167,10 @@ const typeLabel: Record<string, string> = {
                                         d="M4 6h16M4 10h16M4 14h16M4 18h16"
                                     />
                                 </svg>
-                                {{ competition.stages_count }} stage{{
-                                    competition.stages_count !== 1 ? 's' : ''
+                                {{
+                                    competition.stages_count === 1
+                                        ? $t('competitions.stageCountOne', { count: competition.stages_count })
+                                        : $t('competitions.stageCountMany', { count: competition.stages_count })
                                 }}
                             </span>
                         </div>
@@ -163,10 +181,7 @@ const typeLabel: Record<string, string> = {
                             <span
                                 class="rounded bg-gray-100 px-2 py-0.5 font-medium dark:bg-gray-700"
                             >
-                                {{
-                                    typeLabel[competition.type] ??
-                                    competition.type
-                                }}
+                                {{ typeLabel[competition.type] ? $t(typeLabel[competition.type]) : competition.type }}
                             </span>
                             <span v-if="competition.starts_at">
                                 {{
@@ -189,20 +204,19 @@ const typeLabel: Record<string, string> = {
                         :href="competitions.prev_page_url"
                         class="rounded-lg border border-gray-300 px-4 py-2 text-sm hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-800"
                     >
-                        ← Previous
+                        {{ $t('competitions.previousPage') }}
                     </Link>
                     <span
                         class="px-4 py-2 text-sm text-gray-500 dark:text-gray-400"
                     >
-                        Page {{ competitions.current_page }} of
-                        {{ competitions.last_page }}
+                        {{ $t('competitions.pageOf', { current: competitions.current_page, total: competitions.last_page }) }}
                     </span>
                     <Link
                         v-if="competitions.next_page_url"
                         :href="competitions.next_page_url"
                         class="rounded-lg border border-gray-300 px-4 py-2 text-sm hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-800"
                     >
-                        Next →
+                        {{ $t('competitions.nextPage') }}
                     </Link>
                 </div>
             </div>

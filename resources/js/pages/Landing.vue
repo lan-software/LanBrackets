@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 
+const { t } = useI18n();
 const page = usePage();
 const user = computed(() => (page.props.auth as any)?.user);
 </script>
 
 <template>
-    <Head title="LanBrackets — Tournament Management" />
+    <Head :title="$t('landing.pageTitle')" />
 
     <div
         class="relative min-h-screen overflow-hidden bg-stone-950 text-stone-100"
@@ -46,7 +48,7 @@ const user = computed(() => (page.props.auth as any)?.user);
                     </svg>
                 </div>
                 <span class="text-lg font-semibold tracking-tight text-white"
-                    >LanBrackets</span
+                    >{{ $t('common.appName') }}</span
                 >
             </div>
             <div class="flex items-center gap-3">
@@ -55,14 +57,14 @@ const user = computed(() => (page.props.auth as any)?.user);
                     href="/dashboard"
                     class="rounded-full bg-amber-300 px-5 py-2 text-sm font-semibold text-stone-950 transition hover:bg-amber-200"
                 >
-                    Dashboard
+                    {{ $t('landing.dashboard') }}
                 </Link>
                 <Link
                     v-else
                     href="/login"
                     class="rounded-full border border-white/15 px-5 py-2 text-sm font-medium text-stone-200 transition hover:border-amber-300/50 hover:text-white"
                 >
-                    Sign in
+                    {{ $t('landing.signIn') }}
                 </Link>
             </div>
         </header>
@@ -72,17 +74,15 @@ const user = computed(() => (page.props.auth as any)?.user);
                 class="flex min-h-[calc(100vh-10rem)] flex-col items-center justify-center text-center"
             >
                 <p class="text-sm tracking-[0.3em] text-amber-300/70 uppercase">
-                    Tournament Platform
+                    {{ $t('landing.eyebrow') }}
                 </p>
                 <h1
                     class="mt-5 max-w-3xl text-4xl leading-tight font-semibold text-white sm:text-6xl"
                 >
-                    Brackets, matches &amp; standings — all in one place.
+                    {{ $t('landing.hero') }}
                 </h1>
                 <p class="mt-6 max-w-xl text-lg leading-relaxed text-stone-400">
-                    LanBrackets manages tournament formats from single
-                    elimination to swiss rounds. Generate brackets, report match
-                    results, and track live standings for your LAN competitions.
+                    {{ $t('landing.heroDescription') }}
                 </p>
 
                 <div
@@ -92,13 +92,13 @@ const user = computed(() => (page.props.auth as any)?.user);
                         href="/login"
                         class="rounded-2xl bg-amber-300 px-7 py-3 text-sm font-semibold text-stone-950 transition hover:bg-amber-200"
                     >
-                        Sign in to manage
+                        {{ $t('landing.signInToManage') }}
                     </Link>
                     <a
                         href="/auth/redirect"
                         class="rounded-2xl border border-white/15 px-7 py-3 text-sm font-medium text-stone-200 transition hover:border-white/30 hover:text-white"
                     >
-                        Login via LanCore
+                        {{ $t('landing.loginViaLanCore') }}
                     </a>
                 </div>
 
@@ -124,11 +124,10 @@ const user = computed(() => (page.props.auth as any)?.user);
                             </svg>
                         </div>
                         <h3 class="text-sm font-semibold text-white">
-                            Multiple Formats
+                            {{ $t('landing.featureFormatsTitle') }}
                         </h3>
                         <p class="mt-2 text-sm leading-relaxed text-stone-400">
-                            Single &amp; double elimination, round robin, swiss,
-                            and group stages.
+                            {{ $t('landing.featureFormatsBody') }}
                         </p>
                     </div>
                     <div
@@ -153,11 +152,10 @@ const user = computed(() => (page.props.auth as any)?.user);
                             </svg>
                         </div>
                         <h3 class="text-sm font-semibold text-white">
-                            Live Results
+                            {{ $t('landing.featureLiveTitle') }}
                         </h3>
                         <p class="mt-2 text-sm leading-relaxed text-stone-400">
-                            Report scores, advance winners, and display bracket
-                            overlays in real-time.
+                            {{ $t('landing.featureLiveBody') }}
                         </p>
                     </div>
                     <div
@@ -185,11 +183,10 @@ const user = computed(() => (page.props.auth as any)?.user);
                             </svg>
                         </div>
                         <h3 class="text-sm font-semibold text-white">
-                            LanCore Integration
+                            {{ $t('landing.featureIntegrationTitle') }}
                         </h3>
                         <p class="mt-2 text-sm leading-relaxed text-stone-400">
-                            Participants and roles synced from LanCore. No
-                            duplicate sign-ups.
+                            {{ $t('landing.featureIntegrationBody') }}
                         </p>
                     </div>
                 </div>
@@ -197,7 +194,7 @@ const user = computed(() => (page.props.auth as any)?.user);
         </main>
 
         <footer class="relative z-10 py-8 text-center text-xs text-stone-600">
-            Powered by LanBrackets &mdash; Part of the Lan-Software ecosystem
+            {{ $t('landing.footer') }}
         </footer>
     </div>
 </template>

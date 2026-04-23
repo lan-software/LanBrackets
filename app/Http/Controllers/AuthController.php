@@ -45,7 +45,7 @@ class AuthController extends Controller
         $code = $request->string('code')->toString();
 
         if (strlen($code) !== 64) {
-            return redirect()->route('login')->with('error', 'Invalid SSO callback. Please try again.');
+            return redirect()->route('login')->with('error', __('auth.sso_callback_invalid'));
         }
 
         try {
@@ -54,10 +54,10 @@ class AuthController extends Controller
             $this->syncRoles->handle($user, $lanCoreUser->roles);
         } catch (LanCoreRequestException $e) {
             return redirect()->route('login')->with('error', $e->statusCode === 400
-                ? 'The login link has expired. Please try again.'
-                : 'Could not connect to authentication service. Please try again later.');
+                ? __('auth.sso_link_expired')
+                : __('auth.auth_service_unavailable'));
         } catch (LanCoreException) {
-            return redirect()->route('login')->with('error', 'Could not connect to authentication service. Please try again later.');
+            return redirect()->route('login')->with('error', __('auth.auth_service_unavailable'));
         }
 
         Auth::login($user);

@@ -8,7 +8,7 @@ defineProps<{
 
 <template>
     <div>
-        <Head title="Access Restricted" />
+        <Head :title="$t('auth.unauthenticated.title')" />
 
         <div
             class="flex h-screen flex-col items-center justify-center bg-[#0f172a] px-4"
@@ -32,20 +32,18 @@ defineProps<{
                 </div>
 
                 <h1 class="mb-3 text-2xl font-bold text-white">
-                    Access Restricted
+                    {{ $t('auth.unauthenticated.title') }}
                 </h1>
 
                 <p class="mb-6 text-gray-400">
-                    This application requires authentication via LanCore. Please
-                    log in to LanCore and navigate to the competition from
-                    there.
+                    {{ $t('auth.unauthenticated.description') }}
                 </p>
 
                 <a
                     :href="lancoreUrl"
                     class="inline-block rounded bg-blue-600 px-6 py-2.5 text-sm font-medium text-white transition hover:bg-blue-500"
                 >
-                    Go to LanCore
+                    {{ $t('auth.unauthenticated.goToLanCore') }}
                 </a>
             </div>
         </div>
