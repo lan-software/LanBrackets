@@ -33,7 +33,7 @@
         "copied": "Kopiert",
         "optional": "optional",
         "required": "erforderlich",
-        "loadingMore": "Mehr wird geladen...",
+        "loadingMore": "Mehr wird geladen…",
         "noResults": "Keine Ergebnisse gefunden",
         "showMore": "Mehr anzeigen",
         "showLess": "Weniger anzeigen"
@@ -143,7 +143,8 @@
         "settings": "Einstellungen",
         "profile": "Profil",
         "appearance": "Erscheinungsbild",
-        "password": "Passwort"
+        "password": "Passwort",
+        "platform": "Plattform"
     },
     "landing": {
         "title": "Willkommen bei LanBrackets",
@@ -167,7 +168,10 @@
         "bracketAccessAllowed": "Deine Rolle erlaubt Zugriff auf Wettbewerbe und Bracket-Verwaltung.",
         "bracketAccessDenied": "Dein LanCore-Konto ist angemeldet, aber Wettbewerbsverwaltung ist nur für Moderator-, Admin- und Superadmin-Rollen verfügbar.",
         "openCompetitions": "Wettbewerbe öffnen",
-        "refreshLanCore": "LanCore-Anmeldung erneuern"
+        "refreshLanCore": "LanCore-Anmeldung erneuern",
+        "loginViaLanCore": "Mit LanCore anmelden",
+        "dashboard": "Dashboard",
+        "signIn": "Anmelden"
     },
     "dashboard": {
         "title": "Dashboard",
@@ -191,7 +195,8 @@
         "status": "Status",
         "startDate": "Startdatum",
         "empty": "Noch keine Wettbewerbe.",
-        "createFirst": "Erstelle deinen ersten Wettbewerb"
+        "createFirst": "Erstelle deinen ersten Wettbewerb",
+        "statusDraft": "Entwurf"
     },
     "matches": {
         "title": "Partien",
