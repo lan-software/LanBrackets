@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { useI18n } from 'vue-i18n';
 import { show } from '@/actions/App/Http/Controllers/CompetitionController';
 
-const { t } = useI18n();
 
 interface Competition {
     id: number;
@@ -83,8 +81,12 @@ const typeLabel: Record<string, string> = {
                         >
                             {{
                                 competitions.total === 1
-                                    ? $t('competitions.countOne', { count: competitions.total })
-                                    : $t('competitions.countMany', { count: competitions.total })
+                                    ? $t('competitions.countOne', {
+                                          count: competitions.total,
+                                      })
+                                    : $t('competitions.countMany', {
+                                          count: competitions.total,
+                                      })
                             }}
                         </p>
                     </div>
@@ -130,7 +132,11 @@ const typeLabel: Record<string, string> = {
                                     'bg-gray-100 text-gray-700'
                                 "
                             >
-                                {{ statusLabel[competition.status] ? $t(statusLabel[competition.status]) : competition.status }}
+                                {{
+                                    statusLabel[competition.status]
+                                        ? $t(statusLabel[competition.status])
+                                        : competition.status
+                                }}
                             </span>
                         </div>
 
@@ -169,8 +175,12 @@ const typeLabel: Record<string, string> = {
                                 </svg>
                                 {{
                                     competition.stages_count === 1
-                                        ? $t('competitions.stageCountOne', { count: competition.stages_count })
-                                        : $t('competitions.stageCountMany', { count: competition.stages_count })
+                                        ? $t('competitions.stageCountOne', {
+                                              count: competition.stages_count,
+                                          })
+                                        : $t('competitions.stageCountMany', {
+                                              count: competition.stages_count,
+                                          })
                                 }}
                             </span>
                         </div>
@@ -181,7 +191,11 @@ const typeLabel: Record<string, string> = {
                             <span
                                 class="rounded bg-gray-100 px-2 py-0.5 font-medium dark:bg-gray-700"
                             >
-                                {{ typeLabel[competition.type] ? $t(typeLabel[competition.type]) : competition.type }}
+                                {{
+                                    typeLabel[competition.type]
+                                        ? $t(typeLabel[competition.type])
+                                        : competition.type
+                                }}
                             </span>
                             <span v-if="competition.starts_at">
                                 {{
@@ -209,7 +223,12 @@ const typeLabel: Record<string, string> = {
                     <span
                         class="px-4 py-2 text-sm text-gray-500 dark:text-gray-400"
                     >
-                        {{ $t('competitions.pageOf', { current: competitions.current_page, total: competitions.last_page }) }}
+                        {{
+                            $t('competitions.pageOf', {
+                                current: competitions.current_page,
+                                total: competitions.last_page,
+                            })
+                        }}
                     </span>
                     <Link
                         v-if="competitions.next_page_url"

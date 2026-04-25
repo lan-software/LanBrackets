@@ -15,7 +15,7 @@ class AuthenticateLanCoreUser
 
         if ($user === null) {
             return Inertia::render('Auth/Unauthenticated', [
-                'lancoreUrl' => config('services.lancore.url'),
+                'lancoreUrl' => config('lancore.base_url'),
             ])->toResponse($request)->setStatusCode(403);
         }
 

@@ -116,7 +116,9 @@ onUnmounted(() => {
             v-if="!activeStage || activeStage.matches.length === 0"
             class="absolute inset-0 flex items-center justify-center"
         >
-            <p class="text-gray-500">{{ $t('competitions.noMatchesGenerated') }}</p>
+            <p class="text-gray-500">
+                {{ $t('competitions.noMatchesGenerated') }}
+            </p>
         </div>
     </div>
 </template>

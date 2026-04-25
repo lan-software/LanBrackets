@@ -73,7 +73,7 @@ class AuthController extends Controller
 
         abort_unless($payload && $signature, 403, 'Missing authentication parameters.');
 
-        $secret = config('services.lancore.auth_secret');
+        $secret = config('lancore.legacy_auth_secret');
         abort_unless($secret, 500, 'LanCore auth secret is not configured.');
 
         $expectedSignature = hash_hmac('sha256', $payload, $secret);

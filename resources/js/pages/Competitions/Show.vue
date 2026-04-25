@@ -74,9 +74,18 @@ const {
                 </div>
 
                 <div class="flex items-center gap-3 text-sm text-gray-400">
-                    <span>{{ $t('competitions.matchesProgress', { finished: stats.finished, total: stats.total }) }}</span>
+                    <span>{{
+                        $t('competitions.matchesProgress', {
+                            finished: stats.finished,
+                            total: stats.total,
+                        })
+                    }}</span>
                     <span v-if="stats.ready > 0" class="text-yellow-400">
-                        {{ $t('competitions.matchesReady', { count: stats.ready }) }}
+                        {{
+                            $t('competitions.matchesReady', {
+                                count: stats.ready,
+                            })
+                        }}
                     </span>
                 </div>
             </div>

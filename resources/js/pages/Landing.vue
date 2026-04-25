@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import { useI18n } from 'vue-i18n';
 
-const { t } = useI18n();
 const page = usePage();
 const user = computed(() => (page.props.auth as any)?.user);
 </script>
@@ -47,9 +45,9 @@ const user = computed(() => (page.props.auth as any)?.user);
                         <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
                     </svg>
                 </div>
-                <span class="text-lg font-semibold tracking-tight text-white"
-                    >{{ $t('common.appName') }}</span
-                >
+                <span class="text-lg font-semibold tracking-tight text-white">{{
+                    $t('common.appName')
+                }}</span>
             </div>
             <div class="flex items-center gap-3">
                 <Link

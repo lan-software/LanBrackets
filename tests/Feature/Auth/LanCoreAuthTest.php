@@ -12,7 +12,7 @@ uses(RefreshDatabase::class);
 
 function signedAuthUrl(array $payload, ?string $secret = null, ?string $redirect = null): string
 {
-    $secret ??= config('services.lancore.auth_secret');
+    $secret ??= config('lancore.legacy_auth_secret');
     $encoded = base64_encode(json_encode($payload));
     $signature = hash_hmac('sha256', $encoded, $secret);
 
@@ -39,7 +39,7 @@ function validPayload(array $overrides = []): array
 // ─── Callback Tests ───
 
 it('authenticates with valid signed URL', function () {
-    config(['services.lancore.auth_secret' => 'test-secret-key']);
+    config(['lancore.legacy_auth_secret' => 'test-secret-key']);
 
     $this->get(signedAuthUrl(validPayload()))
         ->assertRedirect('/');
@@ -51,7 +51,7 @@ it('authenticates with valid signed URL', function () {
 });
 
 it('creates or updates a LanCore user after callback', function () {
-    config(['services.lancore.auth_secret' => 'test-secret-key']);
+    config(['lancore.legacy_auth_secret' => 'test-secret-key']);
 
     $this->get(signedAuthUrl(validPayload(['name' => 'Jane Admin', 'role' => 'superadmin'])));
 
@@ -92,14 +92,14 @@ it('authenticates through LanCore SSO code exchange', function () {
 });
 
 it('redirects to custom path after callback', function () {
-    config(['services.lancore.auth_secret' => 'test-secret-key']);
+    config(['lancore.legacy_auth_secret' => 'test-secret-key']);
 
     $this->get(signedAuthUrl(validPayload(), null, '/competitions'))
         ->assertRedirect('/competitions');
 });
 
 it('rejects invalid signature', function () {
-    config(['services.lancore.auth_secret' => 'test-secret-key']);
+    config(['lancore.legacy_auth_secret' => 'test-secret-key']);
 
     $payload = base64_encode(json_encode(validPayload()));
 
@@ -108,14 +108,14 @@ it('rejects invalid signature', function () {
 });
 
 it('rejects expired token', function () {
-    config(['services.lancore.auth_secret' => 'test-secret-key']);
+    config(['lancore.legacy_auth_secret' => 'test-secret-key']);
 
     $this->get(signedAuthUrl(validPayload(['exp' => time() - 60])))
         ->assertForbidden();
 });
 
 it('authenticates regular LanCore users with the signed callback', function () {
-    config(['services.lancore.auth_secret' => 'test-secret-key']);
+    config(['lancore.legacy_auth_secret' => 'test-secret-key']);
 
     $this->get(signedAuthUrl(validPayload(['role' => 'user'])))
         ->assertRedirect('/');
@@ -124,7 +124,7 @@ it('authenticates regular LanCore users with the signed callback', function () {
 });
 
 it('accepts moderator role', function () {
-    config(['services.lancore.auth_secret' => 'test-secret-key']);
+    config(['lancore.legacy_auth_secret' => 'test-secret-key']);
 
     $this->get(signedAuthUrl(validPayload(['role' => 'moderator'])))
         ->assertRedirect('/');
@@ -155,7 +155,7 @@ it('serves the public landing page to guests', function () {
 });
 
 it('allows authenticated access to web UI', function () {
-    config(['services.lancore.auth_secret' => 'test-secret-key']);
+    config(['lancore.legacy_auth_secret' => 'test-secret-key']);
 
     $this->get(signedAuthUrl(validPayload()));
 
@@ -164,7 +164,7 @@ it('allows authenticated access to web UI', function () {
 });
 
 it('keeps competition management restricted for regular LanCore users', function () {
-    config(['services.lancore.auth_secret' => 'test-secret-key']);
+    config(['lancore.legacy_auth_secret' => 'test-secret-key']);
 
     $this->get(signedAuthUrl(validPayload(['role' => 'user'])));
 
@@ -188,7 +188,7 @@ it('allows overlay access without authentication', function () {
 it('clears session on logout', function () {
     $this->withoutVite();
 
-    config(['services.lancore.auth_secret' => 'test-secret-key']);
+    config(['lancore.legacy_auth_secret' => 'test-secret-key']);
 
     $this->get(signedAuthUrl(validPayload()));
     $this->assertAuthenticated();

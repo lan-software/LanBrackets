@@ -5,7 +5,7 @@ import { createApp, h } from 'vue';
 import DemoShell from '@/components/demo/DemoShell.vue';
 import { initializeTheme } from '@/composables/useAppearance';
 import i18n from '@/i18n';
-import type {AvailableLocale} from '@/i18n';
+import type { AvailableLocale } from '@/i18n';
 import AppLayout from '@/layouts/AppLayout.vue';
 import '../css/app.css';
 
