@@ -2,7 +2,6 @@
 import { Head, Link } from '@inertiajs/vue3';
 import { show } from '@/actions/App/Http/Controllers/CompetitionController';
 
-
 interface Competition {
     id: number;
     name: string;
