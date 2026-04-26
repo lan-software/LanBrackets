@@ -42,6 +42,7 @@ class HandleInertiaRequests extends Middleware
             'name' => config('app.name'),
             'locale' => fn () => app()->getLocale(),
             'availableLocales' => SetLocale::AVAILABLE,
+            'experimentalLocales' => SetLocale::EXPERIMENTAL,
             'auth' => [
                 'user' => $user === null ? null : [
                     'id' => $user->id,
