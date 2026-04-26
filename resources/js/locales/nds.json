@@ -167,7 +167,9 @@
         "bracketAccessAllowed": "Diene Rull lett Togriep op Wettkämpf un Bracket-Administratschoon to.",
         "bracketAccessDenied": "Dien LanCore-Konto is anmellt, aver Wettkamp-Verwaltung blifft op Moderator, Admin un Superadmin begrenzt.",
         "openCompetitions": "Wettkämpf apen maken",
-        "refreshLanCore": "LanCore-Anmellung opfrischen"
+        "refreshLanCore": "LanCore-Anmellung opfrischen",
+        "signIn": "Anmellen",
+        "loginViaLanCore": "Över LanCore anmellen"
     },
     "dashboard": {
         "title": "Översicht",
