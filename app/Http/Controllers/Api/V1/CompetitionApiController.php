@@ -120,7 +120,7 @@ class CompetitionApiController extends Controller
         CompetitionStage $stage,
     ): AnonymousResourceCollection {
         $matches = $stage->matches()
-            ->with('matchParticipants')
+            ->with(['matchParticipants.competitionParticipant.participant'])
             ->orderBy('round_number')
             ->orderBy('sequence')
             ->get();
@@ -136,7 +136,7 @@ class CompetitionApiController extends Controller
     ): CompetitionMatchResource {
         $action->execute($match, $request->validated('scores'));
 
-        return new CompetitionMatchResource($match->fresh()->load('matchParticipants'));
+        return new CompetitionMatchResource($match->fresh()->load(['matchParticipants.competitionParticipant.participant']));
     }
 
     public function standings(Competition $competition): JsonResponse
@@ -306,6 +306,6 @@ class CompetitionApiController extends Controller
 
         $match->update(['status' => MatchStatus::Cancelled]);
 
-        return new CompetitionMatchResource($match->fresh()->load('matchParticipants'));
+        return new CompetitionMatchResource($match->fresh()->load(['matchParticipants.competitionParticipant.participant']));
     }
 }

@@ -29,7 +29,7 @@ class DispatchWebhook
 
     public function handleMatchResultReported(MatchResultReported $event): void
     {
-        $match = $event->match->load(['competition', 'matchParticipants']);
+        $match = $event->match->load(['competition', 'matchParticipants.competitionParticipant.participant']);
 
         $this->dispatcher->dispatch('match.result_reported', [
             'competition_id' => $match->competition_id,
@@ -41,6 +41,17 @@ class DispatchWebhook
             'winner_participant_id' => $match->winner_participant_id,
             'loser_participant_id' => $match->loser_participant_id,
             'scores' => $match->matchParticipants->pluck('score', 'slot')->all(),
+            'participants' => $match->matchParticipants->map(fn ($mp) => [
+                'competition_participant_id' => $mp->competition_participant_id,
+                'slot' => $mp->slot,
+                'score' => $mp->score,
+                'result' => $mp->result?->value,
+                'participant_type' => $mp->competitionParticipant?->participant_type?->value,
+                'participant_id' => $mp->competitionParticipant?->participant_id,
+                'participant_name' => $mp->competitionParticipant?->participant?->name,
+                'external_reference_id' => $mp->competitionParticipant?->participant?->external_reference_id,
+                'source_system' => $mp->competitionParticipant?->participant?->source_system,
+            ])->all(),
         ]);
     }
 

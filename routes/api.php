@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\LanCoreRolesWebhookController;
 use App\Http\Controllers\Api\V1\CompetitionApiController;
+use App\Http\Controllers\Api\V1\TeamApiController;
 use App\Http\Controllers\Api\V1\WebhookConfigController;
 use App\Http\Middleware\AuthenticateApiToken;
 use Illuminate\Support\Facades\Route;
@@ -34,6 +35,9 @@ Route::prefix('v1')->middleware(AuthenticateApiToken::class)->group(function () 
     Route::post('competitions/{competition}/matches/{match}/cancel', [CompetitionApiController::class, 'cancelMatch']);
 
     Route::get('competitions/{competition}/standings', [CompetitionApiController::class, 'standings']);
+
+    Route::post('teams', [TeamApiController::class, 'upsert']);
+    Route::get('teams/{team}', [TeamApiController::class, 'show']);
 
     Route::get('webhook', [WebhookConfigController::class, 'show']);
     Route::put('webhook', [WebhookConfigController::class, 'update']);
