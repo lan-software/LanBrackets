@@ -14,7 +14,7 @@ class LanCoreRolesWebhookController extends HandlesLanCoreUserRolesUpdatedWebhoo
         private readonly SyncUserRolesFromLanCore $syncRolesAction,
     ) {}
 
-    protected function resolveUser(int $lancoreUserId): ?Model
+    protected function resolveUser(string $lancoreUserId): ?Model
     {
         return User::query()->where('lancore_user_id', $lancoreUserId)->first();
     }

@@ -14,7 +14,7 @@ return new class extends Migration
         });
 
         Schema::table('users', function (Blueprint $table): void {
-            $table->unsignedBigInteger('lancore_user_id')->nullable()->unique()->after('password');
+            $table->string('lancore_user_id', 26)->nullable()->unique()->after('password');
         });
     }
 

@@ -5,7 +5,7 @@ import { computed } from 'vue';
 const page = usePage<{
     auth: {
         user: {
-            id: number;
+            id: string;
             name: string;
             email: string;
             role: string;

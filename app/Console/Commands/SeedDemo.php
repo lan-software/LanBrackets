@@ -480,7 +480,7 @@ class SeedDemo extends Command
     /**
      * Play all pending matches in a specific round that have 2 participants.
      */
-    protected function playRound(ReportMatchResultAction $reportResult, int $stageId, int $roundNumber): void
+    protected function playRound(ReportMatchResultAction $reportResult, string $stageId, int $roundNumber): void
     {
         $matches = CompetitionMatch::query()
             ->where('competition_stage_id', $stageId)
@@ -498,7 +498,7 @@ class SeedDemo extends Command
     /**
      * Play matches in a specific round that became ready (have 2 participants).
      */
-    protected function playReadyMatchesInRound(ReportMatchResultAction $reportResult, int $stageId, int $roundNumber): void
+    protected function playReadyMatchesInRound(ReportMatchResultAction $reportResult, string $stageId, int $roundNumber): void
     {
         $safety = 0;
 
@@ -523,7 +523,7 @@ class SeedDemo extends Command
     /**
      * Find the next match that has 2 participants and is still pending.
      */
-    protected function findNextPlayableMatch(int $stageId): ?CompetitionMatch
+    protected function findNextPlayableMatch(string $stageId): ?CompetitionMatch
     {
         return CompetitionMatch::query()
             ->where('competition_stage_id', $stageId)

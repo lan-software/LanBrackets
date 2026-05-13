@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\MatchResult;
 use Database\Factories\MatchParticipantFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,6 +17,8 @@ class MatchParticipant extends Model
 {
     /** @use HasFactory<MatchParticipantFactory> */
     use HasFactory;
+
+    use HasUlids;
 
     /**
      * @return array<string, string>

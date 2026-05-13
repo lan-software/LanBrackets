@@ -125,7 +125,7 @@ class StandingsCalculator implements StandingsCalculatorContract
     /**
      * @param  Collection<int, CompetitionParticipant>  $participants
      */
-    protected function makeEntry(int $participantId, int $placement, $participants): StandingEntry
+    protected function makeEntry(string $participantId, int $placement, $participants): StandingEntry
     {
         return new StandingEntry(
             participantId: $participantId,

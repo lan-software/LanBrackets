@@ -51,7 +51,7 @@ function resolveMatch(CompetitionMatch $match, int $slot1Score, int $slot2Score)
 /**
  * Reload a match with fresh participants.
  */
-function freshMatch(int $matchId): CompetitionMatch
+function freshMatch(string $matchId): CompetitionMatch
 {
     return CompetitionMatch::with('matchParticipants')->find($matchId);
 }

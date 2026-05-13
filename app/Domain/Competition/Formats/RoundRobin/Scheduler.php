@@ -26,8 +26,8 @@ class Scheduler
      */
     public function schedule(
         Collection $participants,
-        int $competitionId,
-        int $stageId,
+        string $competitionId,
+        string $stageId,
         array $matchSettings = [],
     ): Collection {
         $ids = $participants->values()->all();

@@ -7,23 +7,23 @@ export interface MatchParticipant {
     slot: number;
     score: number | null;
     result: string | null;
-    competition_participant_id: number;
+    competition_participant_id: string;
     name: string;
 }
 
 export interface BracketMatch {
-    id: number;
+    id: string;
     round_number: number;
     sequence: number;
     status: string;
     bracket_side: string | null;
     is_ready: boolean;
-    winner_participant_id: number | null;
+    winner_participant_id: string | null;
     participants: MatchParticipant[];
 }
 
 export interface Stage {
-    id: number;
+    id: string;
     name: string;
     stage_type: string;
     status: string;

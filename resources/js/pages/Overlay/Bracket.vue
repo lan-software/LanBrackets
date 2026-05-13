@@ -4,7 +4,7 @@ import { useBracketCanvas } from '@/composables/useBracketCanvas';
 import type { Stage } from '@/composables/useBracketCanvas';
 
 interface Competition {
-    id: number;
+    id: string;
     name: string;
     slug: string | null;
     type: string;

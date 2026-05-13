@@ -9,10 +9,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('match_connections', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('source_match_id')->constrained('matches')->cascadeOnDelete();
+            $table->ulid('id')->primary();
+            $table->foreignUlid('source_match_id')->constrained('matches')->cascadeOnDelete();
             $table->string('source_outcome'); // 'winner', 'loser', 'placement_1', 'placement_2', etc.
-            $table->foreignId('target_match_id')->constrained('matches')->cascadeOnDelete();
+            $table->foreignUlid('target_match_id')->constrained('matches')->cascadeOnDelete();
             $table->unsignedInteger('target_slot');
             $table->timestamps();
 

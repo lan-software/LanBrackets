@@ -9,9 +9,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('competition_stage_group_members', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('competition_stage_group_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('competition_participant_id')->constrained()->cascadeOnDelete();
+            $table->ulid('id')->primary();
+            $table->foreignUlid('competition_stage_group_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('competition_participant_id')->constrained()->cascadeOnDelete();
             $table->unsignedInteger('seed')->nullable();
             $table->timestamps();
 

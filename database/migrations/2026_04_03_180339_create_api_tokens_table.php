@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('api_tokens', function (Blueprint $table) {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->string('name');
             $table->string('token', 64)->unique();
             $table->string('plain_text_prefix', 8);

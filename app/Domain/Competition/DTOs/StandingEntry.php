@@ -5,14 +5,14 @@ namespace App\Domain\Competition\DTOs;
 final readonly class StandingEntry
 {
     public function __construct(
-        public int $participantId,
+        public string $participantId,
         public int $placement,
         public int $wins,
         public int $losses,
         public int $draws,
         public int $points,
         public float $tiebreaker,
-        public ?int $groupId = null,
+        public ?string $groupId = null,
     ) {}
 
     /**

@@ -9,8 +9,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('competition_stages', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('competition_id')->constrained()->cascadeOnDelete();
+            $table->ulid('id')->primary();
+            $table->foreignUlid('competition_id')->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->string('slug');
             $table->unsignedInteger('order')->default(0);
