@@ -55,13 +55,13 @@ it('creates or updates a LanCore user after callback', function () {
 
     $this->get(signedAuthUrl(validPayload(['name' => 'Jane Admin', 'role' => 'superadmin'])));
 
-    $user = User::query()->where('lancore_user_id', 1)->first();
+    $user = User::query()->where('lancore_user_id', '1')->first();
 
     expect($user)->not->toBeNull()
         ->and($user?->name)->toBe('Jane Admin')
         ->and($user?->email)->toBe('admin@lancore.test')
         ->and($user?->role)->toBe(UserRole::Superadmin)
-        ->and($user?->lancore_user_id)->toBe(1);
+        ->and($user?->lancore_user_id)->toBe('1');
 });
 
 it('authenticates through LanCore SSO code exchange', function () {

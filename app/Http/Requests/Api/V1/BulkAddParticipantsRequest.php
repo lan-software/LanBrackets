@@ -16,7 +16,7 @@ class BulkAddParticipantsRequest extends FormRequest
         return [
             'participants' => ['required', 'array', 'min:1'],
             'participants.*.participant_type' => ['required', 'string', Rule::in(array_column(ParticipantType::cases(), 'value'))],
-            'participants.*.participant_id' => ['required', 'integer'],
+            'participants.*.participant_id' => ['required', 'string'],
             'participants.*.seed' => ['nullable', 'integer', 'min:1'],
         ];
     }

@@ -11,6 +11,7 @@ use App\Models\CompetitionParticipant;
 use App\Models\CompetitionStage;
 use App\Models\Team;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 
 uses(RefreshDatabase::class);
 
@@ -453,7 +454,7 @@ it('rolls back bulk add on failure', function () {
     $this->postJson("/api/v1/competitions/{$competition->id}/participants/bulk", [
         'participants' => [
             ['participant_type' => 'team', 'participant_id' => $team->id, 'seed' => 1],
-            ['participant_type' => 'team', 'participant_id' => 99999, 'seed' => 2],
+            ['participant_type' => 'team', 'participant_id' => (string) Str::ulid(), 'seed' => 2],
         ],
     ], apiHeaders($token))
         ->assertStatus(404);

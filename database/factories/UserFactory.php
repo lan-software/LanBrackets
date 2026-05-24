@@ -53,10 +53,10 @@ class UserFactory extends Factory
         ]);
     }
 
-    public function lanCoreUser(?int $lancoreId = null): static
+    public function lanCoreUser(?string $lancoreId = null): static
     {
         return $this->state(fn (array $attributes) => [
-            'lancore_user_id' => $lancoreId ?? fake()->unique()->numberBetween(1, 99999),
+            'lancore_user_id' => $lancoreId ?? (string) Str::ulid(),
         ]);
     }
 }

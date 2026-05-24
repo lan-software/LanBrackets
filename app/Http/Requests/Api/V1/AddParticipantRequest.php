@@ -15,7 +15,7 @@ class AddParticipantRequest extends FormRequest
     {
         return [
             'participant_type' => ['required', 'string', Rule::in(array_column(ParticipantType::cases(), 'value'))],
-            'participant_id' => ['required', 'integer'],
+            'participant_id' => ['required', 'string'],
             'seed' => ['nullable', 'integer', 'min:1'],
         ];
     }
