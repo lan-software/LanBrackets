@@ -77,7 +77,7 @@ class ReportMatchResult extends Command
     {
         if ($this->option('match')) {
             $match = CompetitionMatch::where('competition_id', $competition->id)
-                ->find((int) $this->option('match'));
+                ->find($this->option('match'));
 
             if ($match === null) {
                 $this->error('Match not found in this competition.');
@@ -120,6 +120,6 @@ class ReportMatchResult extends Command
             })->toArray(),
         );
 
-        return CompetitionMatch::find((int) $matchId);
+        return CompetitionMatch::find($matchId);
     }
 }

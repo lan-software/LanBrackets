@@ -53,7 +53,7 @@ class GenerateBracket extends Command
     protected function resolveStage(Competition $competition): ?CompetitionStage
     {
         if ($this->option('stage')) {
-            $stage = $competition->stages->firstWhere('id', (int) $this->option('stage'));
+            $stage = $competition->stages->firstWhere('id', $this->option('stage'));
 
             if ($stage === null) {
                 $this->error('Stage not found in this competition.');

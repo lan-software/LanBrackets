@@ -2,27 +2,37 @@
 
 use App\Actions\AddCompetitionParticipantAction;
 use App\Actions\CreateCompetitionAction;
+use App\Actions\GenerateBracketAction;
 use App\Enums\CompetitionType;
 use App\Enums\MatchStatus;
 use App\Enums\StageType;
 use App\Models\Competition;
 use App\Models\CompetitionMatch;
-use App\Models\MatchParticipant;
 use App\Models\Team;
 use Illuminate\Support\Facades\Http;
+use Laravel\Prompts\Prompt;
 
 beforeEach(function () {
-    // Reporting a result fires MatchResultReported, which the webhook listener
-    // turns into outbound HTTP calls. Keep the test hermetic.
+    // Reporting a result fires MatchResultReported, whose listener performs
+    // outbound HTTP. Keep the test hermetic.
     Http::fake();
+
+    // resolveMatch()/score prompts use Laravel\Prompts; route them to the
+    // non-interactive fallback so the Artisan harness can drive them.
+    Prompt::fallbackWhen(true);
+});
+
+afterEach(function () {
+    Prompt::fallbackWhen(false);
 });
 
 /**
- * Build a competition with a single playable match between two teams.
+ * Build a single-elimination competition with two participants and a generated
+ * bracket, returning the lone playable match plus the participant names.
  *
- * @return array{competition: Competition, match: CompetitionMatch}
+ * @return array{competition: Competition, match: CompetitionMatch, name1: string, name2: string}
  */
-function makeReportableMatch(): array
+function makePlayableMatch(): array
 {
     $competition = app(CreateCompetitionAction::class)->execute(
         name: 'Report Cup '.uniqid(),
@@ -30,30 +40,27 @@ function makeReportableMatch(): array
         stageType: StageType::SingleElimination,
     );
 
-    $addParticipant = app(AddCompetitionParticipantAction::class);
-    $cp1 = $addParticipant->execute($competition, Team::factory()->create(['name' => 'Alpha']), 1);
-    $cp2 = $addParticipant->execute($competition, Team::factory()->create(['name' => 'Bravo']), 2);
+    $add = app(AddCompetitionParticipantAction::class);
+    $add->execute($competition, Team::factory()->create(['name' => 'Alpha']), 1);
+    $add->execute($competition, Team::factory()->create(['name' => 'Bravo']), 2);
 
     $stage = $competition->stages()->first();
+    app(GenerateBracketAction::class)->execute($stage);
 
-    $match = CompetitionMatch::factory()->create([
-        'competition_id' => $competition->id,
-        'competition_stage_id' => $stage->id,
-        'status' => MatchStatus::Pending,
-    ]);
+    $match = $stage->matches()
+        ->where('status', MatchStatus::Pending)
+        ->with('matchParticipants.competitionParticipant.participant')
+        ->first();
 
-    MatchParticipant::factory()->create([
-        'match_id' => $match->id,
-        'competition_participant_id' => $cp1->id,
-        'slot' => 1,
-    ]);
-    MatchParticipant::factory()->create([
-        'match_id' => $match->id,
-        'competition_participant_id' => $cp2->id,
-        'slot' => 2,
-    ]);
+    $p1 = $match->matchParticipants->firstWhere('slot', 1);
+    $p2 = $match->matchParticipants->firstWhere('slot', 2);
 
-    return ['competition' => $competition, 'match' => $match];
+    return [
+        'competition' => $competition,
+        'match' => $match,
+        'name1' => $p1?->competitionParticipant?->participant?->name ?? 'Slot 1',
+        'name2' => $p2?->competitionParticipant?->participant?->name ?? 'Slot 2',
+    ];
 }
 
 it('fails when the competition does not exist', function () {
@@ -76,17 +83,8 @@ it('fails when the match is not part of the competition', function () {
         ->assertExitCode(1);
 });
 
-/*
- * NOTE: resolveMatch() casts the --match option to (int) before calling find()
- * (ReportMatchResult.php:80). Because CompetitionMatch uses ULID string keys,
- * any real ULID is cast to an integer that never matches a row, so the
- * --match success path is unreachable through this command as written. The
- * test below documents that behaviour: a valid, in-competition match passed via
- * --match still reports "Match not found" and exits 1. Fixing the cast is an
- * application change, which is out of scope for these tests.
- */
-it('cannot resolve a ULID match via --match because of the (int) cast (known app bug)', function () {
-    ['competition' => $competition, 'match' => $match] = makeReportableMatch();
+it('reports a result via --match and finishes the match', function () {
+    ['competition' => $competition, 'match' => $match] = makePlayableMatch();
 
     $this->artisan('competition:report-result', [
         'competition' => $competition->id,
@@ -94,17 +92,44 @@ it('cannot resolve a ULID match via --match because of the (int) cast (known app
         '--score1' => '3',
         '--score2' => '1',
     ])
-        ->expectsOutputToContain('Match not found in this competition.')
+        ->expectsOutputToContain('Result recorded. Winner:')
+        ->assertExitCode(0);
+
+    expect($match->fresh()->status)->toBe(MatchStatus::Finished);
+});
+
+it('reports a result interactively, prompting for the match and scores', function () {
+    ['competition' => $competition, 'match' => $match, 'name1' => $name1, 'name2' => $name2] = makePlayableMatch();
+
+    $this->artisan('competition:report-result', [
+        'competition' => $competition->id,
+    ])
+        ->expectsQuestion('Select a match to report', $match->id)
+        ->expectsQuestion("Score for {$name1} (slot 1)", '5')
+        ->expectsQuestion("Score for {$name2} (slot 2)", '2')
+        ->expectsOutputToContain('Result recorded. Winner:')
+        ->assertExitCode(0);
+
+    expect($match->fresh()->status)->toBe(MatchStatus::Finished);
+});
+
+it('fails when a single-elimination match is reported as a tie', function () {
+    ['competition' => $competition, 'match' => $match] = makePlayableMatch();
+
+    $this->artisan('competition:report-result', [
+        'competition' => $competition->id,
+        '--match' => $match->id,
+        '--score1' => '2',
+        '--score2' => '2',
+    ])
         ->assertExitCode(1);
 
-    // The match was never resolved, so it stays pending.
     expect($match->fresh()->status)->toBe(MatchStatus::Pending);
 });
 
 it('warns when no matches are ready to be reported interactively', function () {
     $competition = Competition::factory()->create();
 
-    // Without --match the command lists ready matches; there are none here.
     $this->artisan('competition:report-result', [
         'competition' => $competition->id,
     ])
