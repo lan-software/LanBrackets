@@ -33,6 +33,10 @@ class AddCompetitionParticipant extends Command
 
         $participantId = $this->option('id') ?? $this->promptForParticipant($participantType);
 
+        if ($participantId === null) {
+            return self::FAILURE;
+        }
+
         $participant = match ($participantType) {
             'team' => Team::find($participantId),
             'user' => User::find($participantId),
@@ -60,36 +64,34 @@ class AddCompetitionParticipant extends Command
         }
     }
 
-    protected function promptForParticipant(string $type): int
+    protected function promptForParticipant(string $type): ?string
     {
         if ($type === 'team') {
             $teams = Team::all();
 
             if ($teams->isEmpty()) {
                 $this->error('No teams found. Create a team first.');
-                exit(1);
+
+                return null;
             }
 
-            $teamId = select(
+            return (string) select(
                 label: 'Select a team',
                 options: $teams->mapWithKeys(fn ($t) => [$t->id => "{$t->name} (ID: {$t->id})"]),
             );
-
-            return (int) $teamId;
         }
 
         $users = User::all();
 
         if ($users->isEmpty()) {
             $this->error('No users found. Create a user first.');
-            exit(1);
+
+            return null;
         }
 
-        $userId = select(
+        return (string) select(
             label: 'Select a user',
             options: $users->mapWithKeys(fn ($u) => [$u->id => "{$u->name} (ID: {$u->id})"]),
         );
-
-        return (int) $userId;
     }
 }
