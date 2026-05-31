@@ -10,17 +10,26 @@ use App\Models\CompetitionMatch;
 use App\Models\MatchParticipant;
 use App\Models\Team;
 use Illuminate\Support\Facades\Http;
+use Laravel\Prompts\Prompt;
 
 beforeEach(function () {
     // Reporting a result fires MatchResultReported, which the webhook listener
     // turns into outbound HTTP calls. Keep the test hermetic.
     Http::fake();
+
+    // resolveMatch()/resolveScores() use Laravel\Prompts; route them to the
+    // non-interactive fallback so the Artisan harness can drive them.
+    Prompt::fallbackWhen(true);
+});
+
+afterEach(function () {
+    Prompt::fallbackWhen(false);
 });
 
 /**
  * Build a competition with a single playable match between two teams.
  *
- * @return array{competition: Competition, match: CompetitionMatch}
+ * @return array{competition: Competition, match: CompetitionMatch, cp1: mixed, cp2: mixed}
  */
 function makeReportableMatch(): array
 {
@@ -40,6 +49,8 @@ function makeReportableMatch(): array
         'competition_id' => $competition->id,
         'competition_stage_id' => $stage->id,
         'status' => MatchStatus::Pending,
+        'participant_1_id' => $cp1->id,
+        'participant_2_id' => $cp2->id,
     ]);
 
     MatchParticipant::factory()->create([
@@ -53,7 +64,7 @@ function makeReportableMatch(): array
         'slot' => 2,
     ]);
 
-    return ['competition' => $competition, 'match' => $match];
+    return ['competition' => $competition, 'match' => $match, 'cp1' => $cp1, 'cp2' => $cp2];
 }
 
 it('fails when the competition does not exist', function () {
@@ -76,17 +87,8 @@ it('fails when the match is not part of the competition', function () {
         ->assertExitCode(1);
 });
 
-/*
- * NOTE: resolveMatch() casts the --match option to (int) before calling find()
- * (ReportMatchResult.php:80). Because CompetitionMatch uses ULID string keys,
- * any real ULID is cast to an integer that never matches a row, so the
- * --match success path is unreachable through this command as written. The
- * test below documents that behaviour: a valid, in-competition match passed via
- * --match still reports "Match not found" and exits 1. Fixing the cast is an
- * application change, which is out of scope for these tests.
- */
-it('cannot resolve a ULID match via --match because of the (int) cast (known app bug)', function () {
-    ['competition' => $competition, 'match' => $match] = makeReportableMatch();
+it('reports a result via --match and completes the match', function () {
+    ['competition' => $competition, 'match' => $match, 'cp1' => $cp1] = makeReportableMatch();
 
     $this->artisan('competition:report-result', [
         'competition' => $competition->id,
@@ -94,17 +96,52 @@ it('cannot resolve a ULID match via --match because of the (int) cast (known app
         '--score1' => '3',
         '--score2' => '1',
     ])
-        ->expectsOutputToContain('Match not found in this competition.')
+        ->expectsOutputToContain('Match result reported successfully.')
+        ->assertExitCode(0);
+
+    $match->refresh();
+    expect($match->status)->toBe(MatchStatus::Completed);
+    expect($match->score_participant_1)->toBe(3);
+    expect($match->score_participant_2)->toBe(1);
+    expect($match->winner_participant_id)->toBe($cp1->id);
+});
+
+it('reports a result interactively, prompting for the match and scores', function () {
+    ['competition' => $competition, 'match' => $match, 'cp2' => $cp2] = makeReportableMatch();
+
+    $this->artisan('competition:report-result', [
+        'competition' => $competition->id,
+    ])
+        // The select() fallback matches on the option label, not the key.
+        ->expectsQuestion('Select a match', "Match #{$match->id}")
+        ->expectsQuestion('Score for participant 1', '1')
+        ->expectsQuestion('Score for participant 2', '2')
+        ->expectsOutputToContain('Match result reported successfully.')
+        ->assertExitCode(0);
+
+    $match->refresh();
+    expect($match->status)->toBe(MatchStatus::Completed);
+    expect($match->winner_participant_id)->toBe($cp2->id);
+});
+
+it('fails when the reported scores are a tie', function () {
+    ['competition' => $competition, 'match' => $match] = makeReportableMatch();
+
+    $this->artisan('competition:report-result', [
+        'competition' => $competition->id,
+        '--match' => $match->id,
+        '--score1' => '2',
+        '--score2' => '2',
+    ])
+        ->expectsOutputToContain('Match cannot end in a tie.')
         ->assertExitCode(1);
 
-    // The match was never resolved, so it stays pending.
     expect($match->fresh()->status)->toBe(MatchStatus::Pending);
 });
 
 it('warns when no matches are ready to be reported interactively', function () {
     $competition = Competition::factory()->create();
 
-    // Without --match the command lists ready matches; there are none here.
     $this->artisan('competition:report-result', [
         'competition' => $competition->id,
     ])
