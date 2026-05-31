@@ -81,6 +81,6 @@ class GenerateBracket extends Command
                 ->toArray(),
         );
 
-        return $competition->stages->firstWhere('id', (int) $stageId);
+        return $competition->stages->firstWhere('id', $stageId);
     }
 }
