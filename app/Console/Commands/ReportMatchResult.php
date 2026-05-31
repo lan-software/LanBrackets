@@ -120,6 +120,6 @@ class ReportMatchResult extends Command
             })->toArray(),
         );
 
-        return CompetitionMatch::find($matchId);
+        return CompetitionMatch::find((int) $matchId);
     }
 }
